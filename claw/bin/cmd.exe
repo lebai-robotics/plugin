@@ -1,0 +1,16 @@
+#!/usr/bin/env lpy
+
+import asyncio
+import sys
+import lebai_sdk
+
+lebai_sdk.init()
+
+async def main():
+    robot_ip = "127.0.0.1"
+    lebai = await lebai_sdk.connect(robot_ip, False)
+    await lebai.start_sys() #启动手臂
+    await lebai.init_claw()
+    await lebai.set_claw(None, int(sys.argv[1]))
+
+asyncio.run(main())
