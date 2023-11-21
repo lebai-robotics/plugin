@@ -1,6 +1,6 @@
 {
-  "name": "claw",
-  "description": "控制夹爪",
+  "name": "apriltag",
+  "description": "视觉识别apriltag位姿",
   "homepage": "lebai.ltd",
   "web": true,
   "daemon": false,

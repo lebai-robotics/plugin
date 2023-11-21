@@ -1,0 +1,4 @@
+dt-apriltags==3.1.7
+lebai_sdk==0.1.20
+numpy==1.21.6
+opencv-python-headless==4.8.0.76
