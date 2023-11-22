@@ -14,30 +14,30 @@ lebai_sdk.init()
 
 async def main():
     lebai = await lebai_sdk.connect("127.0.0.1", True)
-    camera_index = await lebai.get_item("plugin_apriltag_camera_index")
+    camera_index = (await lebai.get_item("plugin_apriltag_camera_index"))['value']
     if not camera_index:
 	    camera_index = "0"
     camera_index = int(camera_index)
-    fx = await lebai.get_item("plugin_apriltag_fx")
+    fx = (await lebai.get_item("plugin_apriltag_fx"))['value']
     if not fx:
 	    fx = "320"
     fx = float(fx)
-    fy = await lebai.get_item("plugin_apriltag_fy")
+    fy = (await lebai.get_item("plugin_apriltag_fy"))['value']
     if not fy:
 	    fy = "240"
     fy = float(fy)
-    cx = await lebai.get_item("plugin_apriltag_cx")
+    cx = (await lebai.get_item("plugin_apriltag_cx"))['value']
     if not cx:
 	    cx = "320"
     cx = float(cx)
-    cy = await lebai.get_item("plugin_apriltag_cy")
+    cy = (await lebai.get_item("plugin_apriltag_cy"))['value']
     if not cy:
 	    cy = "240"
     cy = float(cy)
-    tag_family = await lebai.get_item("plugin_apriltag_tag_family")
+    tag_family = (await lebai.get_item("plugin_apriltag_tag_family"))['value']
     if not tag_family:
 	    tag_family = "tag36h11"
-    tag_size = await lebai.get_item("plugin_apriltag_tag_size")
+    tag_size = (await lebai.get_item("plugin_apriltag_tag_size"))['value']
     if not tag_size:
 	    tag_size = "0.04"
     tag_size = float(tag_size)

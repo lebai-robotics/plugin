@@ -1,166 +1,168 @@
 <!DOCTYPE html>
 <html>
+
 <body>
-<form>
-camera_index<br>
-<input type="text" id="camera_index">
-<br>
-fx<br>
-<input type="text" id="fx">
-<br>
-fy<br>
-<input type="text" id="fy">
-<br>
-cx<br>
-<input type="text" id="cx">
-<br>
-cy<br>
-<input type="text" id="cy">
-<br>
-tag_family<br>
-<input type="text" id="tag_family">
-<br>
-tag_size<br>
-<input type="text" id="tag_size">
-<br>
-</form>
-<button onclick="save()">save</button>
-<button onclick="get()">get</button>
+	<form>
+		camera_index<br>
+		<input type="text" id="camera_index">
+		<br>
+		fx<br>
+		<input type="text" id="fx">
+		<br>
+		fy<br>
+		<input type="text" id="fy">
+		<br>
+		cx<br>
+		<input type="text" id="cx">
+		<br>
+		cy<br>
+		<input type="text" id="cy">
+		<br>
+		tag_family<br>
+		<input type="text" id="tag_family">
+		<br>
+		tag_size<br>
+		<input type="text" id="tag_size">
+		<br>
+	</form>
+	<button onclick="save()">save</button>
+	<button onclick="get()">get</button>
+</body>
 
 <script>
-var ws;
-var rpc_data = {
-	"jsonrpc": "2.0",
-	"method": "",
-	"params": [],
-	"id": 2
-};
-function save() {
-	rpc_data.id = 10;
-	rpc_data.method = "set_item";
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_camera_index",
-		"value": document.getElementById("camera_index").value
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
 	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_fx",
-		"value": document.getElementById("fx").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_fy",
-		"value": document.getElementById("fy").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_cx",
-		"value": document.getElementById("cx").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_cy",
-		"value": document.getElementById("cy").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_tag_family",
-		"value": document.getElementById("tag_family").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_tag_size",
-		"value": document.getElementById("tag_size").value
-	};
-	ws.send(JSON.stringify(rpc_data));
-}
-function get() {
-	rpc_data.method = "get_item";
-	rpc_data.id = 21;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_camera_index",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 22;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_fx",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 23;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_fy",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 24;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_cx",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 25;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_cy",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 26;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_tag_family",
-	};
-	ws.send(JSON.stringify(rpc_data));
-	rpc_data.id = 27;
-	rpc_data.params[0] = {
-		"key": "plugin_apriltag_tag_size",
-	};
-	ws.send(JSON.stringify(rpc_data));
-}
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_camera_index",
+			"value": document.getElementById("camera_index").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_fx",
+			"value": document.getElementById("fx").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_fy",
+			"value": document.getElementById("fy").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_cx",
+			"value": document.getElementById("cx").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_cy",
+			"value": document.getElementById("cy").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_tag_family",
+			"value": document.getElementById("tag_family").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_tag_size",
+			"value": document.getElementById("tag_size").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 21;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_camera_index",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 22;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_fx",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 23;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_fy",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 24;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_cx",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 25;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_cy",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 26;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_tag_family",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 27;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_tag_size",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
 
-function connect() {
-	ws = new WebSocket("ws://"+window.location.hostname+":3030");
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
 
-	ws.onopen = ()=>{
-		console.log("open ws");
-		get();
-	};
-	ws.onmessage = (data)=>{
-		var msg = JSON.parse(data.data);
-		if(msg.error) {
-			console.log(msg.error);
-		}else{
-			var id = msg.id;
-			var value = msg.result.value;
-			if(!value) {
-				return;
-			}
-			if(id == 21) {
-				document.getElementById("camera_index").value = value;
-			}
-			if(id == 22) {
-				document.getElementById("fx").value = value;
-			}
-			if(id == 23) {
-				document.getElementById("fy").value = value;
-			}
-			if(id == 24) {
-				document.getElementById("cx").value = value;
-			}
-			if(id == 25) {
-				document.getElementById("cy").value = value;
-			}
-			if(id == 26) {
-				document.getElementById("tag_family").value = value;
-			}
-			if(id == 27) {
-				document.getElementById("tag_size").value = value;
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 21) {
+					document.getElementById("camera_index").value = value || "0";
+				}
+				if (id == 22) {
+					document.getElementById("fx").value = value || "320";
+				}
+				if (id == 23) {
+					document.getElementById("fy").value = value || "240";
+				}
+				if (id == 24) {
+					document.getElementById("cx").value = value || "320";
+				}
+				if (id == 25) {
+					document.getElementById("cy").value = value || "240";
+				}
+				if (id == 26) {
+					document.getElementById("tag_family").value = value || "tag36h11";
+				}
+				if (id == 27) {
+					document.getElementById("tag_size").value = value || "0.04";
+				}
 			}
 		}
 	}
-}
-connect();
+	connect();
 
-setInterval(()=>{
-	if (ws.readyState == ws.CLOSED) {
-		connect();
-	}
-}, 1000);
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
 </script>
-</body>
+
 </html>
