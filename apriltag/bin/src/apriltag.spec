@@ -11,7 +11,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['apirltag.py'],
+    ['apriltag.py'],
     pathex=[],
     binaries=[],
     datas=datas,
@@ -52,7 +52,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='apirltag',
+    name='apriltag',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -72,5 +72,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='apirltag',
+    name='apriltag',
 )
