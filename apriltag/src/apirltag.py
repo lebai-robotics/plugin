@@ -15,12 +15,32 @@ lebai_sdk.init()
 async def main():
     lebai = await lebai_sdk.connect("127.0.0.1", True)
     camera_index = await lebai.get_item("plugin_apriltag_camera_index")
+    if not camera_index:
+	    camera_index = "0"
+    camera_index = int(camera_index)
     fx = await lebai.get_item("plugin_apriltag_fx")
+    if not fx:
+	    fx = "320"
+    fx = float(fx)
     fy = await lebai.get_item("plugin_apriltag_fy")
+    if not fy:
+	    fy = "240"
+    fy = float(fy)
     cx = await lebai.get_item("plugin_apriltag_cx")
+    if not cx:
+	    cx = "320"
+    cx = float(cx)
     cy = await lebai.get_item("plugin_apriltag_cy")
+    if not cy:
+	    cy = "240"
+    cy = float(cy)
     tag_family = await lebai.get_item("plugin_apriltag_tag_family")
+    if not tag_family:
+	    tag_family = "tag36h11"
     tag_size = await lebai.get_item("plugin_apriltag_tag_size")
+    if not tag_size:
+	    tag_size = "0.04"
+    tag_size = float(tag_size)
 
     at_detector = apriltag.Detector(families=tag_family)
     cap = camera.open(camera_index)
