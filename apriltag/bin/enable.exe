@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
-chmod 755 ./`uname -m`/apirltag
+#chmod 755 ./`uname -m`/apirltag
+lpip install -r ./src/requirements.txt
