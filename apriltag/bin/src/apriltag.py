@@ -24,7 +24,7 @@ async def main():
     fx = float(fx)
     fy = (await lebai.get_item("plugin_apriltag_fy"))['value']
     if not fy:
-	    fy = "240"
+	    fy = "320"
     fy = float(fy)
     cx = (await lebai.get_item("plugin_apriltag_cx"))['value']
     if not cx:
