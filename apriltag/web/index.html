@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html>
-
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>AprilTag摄像头配置</title>
+</head>
 <body>
 	<form>
-		camera_index<br>
+		camera_index(深度摄像头填 -1)<br>
 		<input type="text" id="camera_index">
+		<br>
+		camera_width<br>
+		<input type="text" id="camera_width">
+		<br>
+		camera_height<br>
+		<input type="text" id="camera_height">
 		<br>
 		fx<br>
 		<input type="text" id="fx">
@@ -43,6 +52,16 @@
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_camera_index",
 			"value": document.getElementById("camera_index").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_camera_width",
+			"value": document.getElementById("camera_width").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_camera_height",
+			"value": document.getElementById("camera_height").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
@@ -85,30 +104,40 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 22;
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_fx",
+			"key": "plugin_apriltag_camera_width",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 23;
 		rpc_data.params[0] = {
+			"key": "plugin_apriltag_camera_height",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 31;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_fx",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 32;
+		rpc_data.params[0] = {
 			"key": "plugin_apriltag_fy",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 24;
+		rpc_data.id = 33;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_cx",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 25;
+		rpc_data.id = 34;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_cy",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 26;
+		rpc_data.id = 41;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_tag_family",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 27;
+		rpc_data.id = 42;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_tag_size",
 		};
@@ -133,24 +162,30 @@
 					return;
 				}
 				if (id == 21) {
-					document.getElementById("camera_index").value = value || "0";
+					document.getElementById("camera_index").value = value || "-1";
 				}
 				if (id == 22) {
-					document.getElementById("fx").value = value || "320";
+					document.getElementById("camera_width").value = value || "1280";
 				}
 				if (id == 23) {
-					document.getElementById("fy").value = value || "320";
+					document.getElementById("camera_height").value = value || "720";
 				}
-				if (id == 24) {
-					document.getElementById("cx").value = value || "320";
+				if (id == 31) {
+					document.getElementById("fx").value = value || "900";
 				}
-				if (id == 25) {
-					document.getElementById("cy").value = value || "240";
+				if (id == 32) {
+					document.getElementById("fy").value = value || "900";
 				}
-				if (id == 26) {
+				if (id == 33) {
+					document.getElementById("cx").value = value || "640";
+				}
+				if (id == 34) {
+					document.getElementById("cy").value = value || "360";
+				}
+				if (id == 41) {
 					document.getElementById("tag_family").value = value || "tag36h11";
 				}
-				if (id == 27) {
+				if (id == 42) {
 					document.getElementById("tag_size").value = value || "0.04";
 				}
 			}
