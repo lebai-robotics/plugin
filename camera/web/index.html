@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>摄像头配置</title>
 </head>
+
 <body>
 	<form>
 		index(深度摄像头填 -1)<br>
@@ -27,12 +29,18 @@
 		cy<br>
 		<input type="text" id="cy">
 		<br>
+		interval(采集频率，单位ms)<br>
+		<input type="text" id="interval">
+		<br>
 	</form>
 	<button onclick="save()">save</button>
 	<button onclick="get()">get</button>
+	<br>
+	<img src="../images/tmp.jpg" id="pic">
 </body>
 
 <script>
+	var timer_pic = null;
 	var ws;
 	var rpc_data = {
 		"jsonrpc": "2.0",
@@ -78,6 +86,11 @@
 			"value": document.getElementById("cy").value
 		};
 		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_interval",
+			"value": document.getElementById("interval").value
+		};
+		ws.send(JSON.stringify(rpc_data));
 	}
 	function get() {
 		rpc_data.method = "get_item";
@@ -114,6 +127,11 @@
 		rpc_data.id = 34;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_cy",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 41;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_interval",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -155,6 +173,18 @@
 				}
 				if (id == 34) {
 					document.getElementById("cy").value = value || "360";
+				}
+				if (id == 41) {
+					var interval = value || "0";
+					document.getElementById("interval").value = interval;
+					if (timer_pic) {
+						clearInterval(timer_pic);
+					}
+					if (interval != "0") {
+						timer_pic = setInterval(() => {
+							document.getElementById("pic").src = "../images/tmp.jpg?" + Date.now()
+						}, Number(interval));
+					}
 				}
 			}
 		}

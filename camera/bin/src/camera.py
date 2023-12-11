@@ -1,11 +1,12 @@
 # encoding: utf-8
 
-### AprilTag检测位姿
-
+import os
 import cv2
 import time
 import lebai_sdk
 import utils.camera as camera
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
@@ -15,7 +16,7 @@ def get_interval():
     if not interval:
         interval = "0"
     interval = float(interval)
-    return interval
+    return interval/1000
 
 def main():
     index = (lebai.get_item("plugin_camera_index"))['value']
@@ -51,6 +52,9 @@ def main():
     if not cap.isOpened():
         exit(1)
 
+    images_dir = os.path.join(current_dir, "../../images")
+    if not os.path.exists(images_dir):
+        os.mkdir(images_dir)
     while True:
         interval = get_interval()
         if interval > 0:
@@ -58,7 +62,7 @@ def main():
             frame = cap.getImage()
             if frame is None:
                 break
-            cv2.iwrite("../../images/tmp.jpg", frame)
+            cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame)
         else:
             time.sleep(5.0)
     exit(2)
