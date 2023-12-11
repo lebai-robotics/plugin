@@ -69,4 +69,5 @@ def main():
     # 释放摄像头
     cap.release()
 
-main()
+if __name__ == '__main__':
+    main()

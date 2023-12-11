@@ -55,4 +55,5 @@ def main():
 
     print(ret)
 
-main()
+if __name__ == '__main__':
+    main()

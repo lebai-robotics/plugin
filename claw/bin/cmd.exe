@@ -24,4 +24,5 @@ def main():
     lebai.init_claw()
     lebai.set_claw(get_force(), get_amplitude())
 
-main()
+if __name__ == '__main__':
+    main()

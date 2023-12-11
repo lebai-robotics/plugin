@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 #./`uname -m`/apriltag
-lpython ./src/apriltag.py
+lpy ./src/apriltag.py
