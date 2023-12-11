@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>摄像头配置</title>
+</head>
+<body>
+	<form>
+		index(深度摄像头填 -1)<br>
+		<input type="text" id="index">
+		<br>
+		width<br>
+		<input type="text" id="width">
+		<br>
+		height<br>
+		<input type="text" id="height">
+		<br>
+		fx<br>
+		<input type="text" id="fx">
+		<br>
+		fy<br>
+		<input type="text" id="fy">
+		<br>
+		cx<br>
+		<input type="text" id="cx">
+		<br>
+		cy<br>
+		<input type="text" id="cy">
+		<br>
+	</form>
+	<button onclick="save()">save</button>
+	<button onclick="get()">get</button>
+</body>
+
+<script>
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_index",
+			"value": document.getElementById("index").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_width",
+			"value": document.getElementById("width").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_height",
+			"value": document.getElementById("height").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_fx",
+			"value": document.getElementById("fx").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_fy",
+			"value": document.getElementById("fy").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cx",
+			"value": document.getElementById("cx").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cy",
+			"value": document.getElementById("cy").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 21;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_index",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 22;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_width",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 23;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_height",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 31;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_fx",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 32;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_fy",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 33;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cx",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 34;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cy",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 21) {
+					document.getElementById("index").value = value || "-1";
+				}
+				if (id == 22) {
+					document.getElementById("width").value = value || "1280";
+				}
+				if (id == 23) {
+					document.getElementById("height").value = value || "720";
+				}
+				if (id == 31) {
+					document.getElementById("fx").value = value || "900";
+				}
+				if (id == 32) {
+					document.getElementById("fy").value = value || "900";
+				}
+				if (id == 33) {
+					document.getElementById("cx").value = value || "640";
+				}
+				if (id == 34) {
+					document.getElementById("cy").value = value || "360";
+				}
+			}
+		}
+	}
+	connect();
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+</script>
+
+</html>

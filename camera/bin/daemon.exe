@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+#./`uname -m`/camera
+lpython ./src/camera.py

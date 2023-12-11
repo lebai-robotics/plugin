@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+#chmod 755 ./`uname -m`/apriltag
+lpip install -r ./src/requirements.txt
