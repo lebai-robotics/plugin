@@ -1,8 +1,5 @@
 {
   "name": "claw",
   "description": "控制夹爪",
-  "homepage": "lebai.ltd",
-  "web": true,
-  "daemon": false,
-  "cmd": true
+  "homepage": "lebai.ltd"
 }

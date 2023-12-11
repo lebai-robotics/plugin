@@ -1,114 +1,121 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>夹爪控制</title>
+</head>
+
 <body>
-<form>
-actual_amplitude<br>
-<input type="text" id="actual_amplitude" readonly>
-<br>
-</form> 
+	<form>
+		actual_amplitude<br>
+		<input type="text" id="actual_amplitude" readonly>
+		<br>
+	</form>
 
-<hr/>
+	<hr />
 
-<form>
-target_force<br>
-<input type="text" id="target_force">
-<br>
-target_amplitude<br>
-<input type="text" id="target_amplitude">
-<br>
-</form>
-<button onclick="init_claw()">init_claw</button>
-<button onclick="set_claw()">set_claw</button>
+	<form>
+		target_force<br>
+		<input type="text" id="target_force">
+		<br>
+		target_amplitude<br>
+		<input type="text" id="target_amplitude">
+		<br>
+	</form>
+	<button onclick="init_claw()">init_claw</button>
+	<button onclick="set_claw()">set_claw</button>
 
-<script>
-var ws;
-var rpc_data = {
-	"jsonrpc": "2.0",
-	"method": "",
-	"params": [],
-	"id": 2
-};
-function init_claw() {
-	rpc_data.method = "write_multiple_registers";
-	rpc_data.params[0] = {
-		"device": "claw",
-		"pin": "40008",
-		"values": [1]
-	};
-	ws.send(JSON.stringify(rpc_data));
-}
-function get_claw() {
-	rpc_data.method = "read_holding_registers";
-	rpc_data.params[0] = {
-		"device": "claw",
-		"pin": "40005",
-		"count": 2
-	};
-	ws.send(JSON.stringify(rpc_data));
-}
-function set_claw() {
-	var target_force = document.getElementById("target_force").value;
-	var target_amplitude = document.getElementById("target_amplitude").value;
-
-	rpc_data.method = "write_multiple_registers";
-	rpc_data.params[0] = {
-		"device": "claw",
-		"pin": "40000",
-		"values": [Number(target_amplitude), Number(target_force)]
-	};
-	ws.send(JSON.stringify(rpc_data));
-}
-
-function connect() {
-	ws = new WebSocket("ws://"+window.location.hostname+":3031");
-
-	ws.onopen = ()=>{
-		console.log("open ws");
-
-		rpc_data.method = "save_modbus";
-		rpc_data.params[0] = {
-			"name": "claw",
-			"data": {
-				"kind": "MODBUS_FLANGE",
-				"slave_id": 1
-			}
+	<script>
+		var ws;
+		var rpc_data = {
+			"jsonrpc": "2.0",
+			"method": "",
+			"params": [],
+			"id": 2
 		};
-		ws.send(JSON.stringify(rpc_data));
-		get_claw();
-	};
-	ws.onmessage = (data)=>{
-		var msg = JSON.parse(data.data);
-		if(msg.error) {
-			console.log(msg.error);
-		}else{
-			var values = msg.result.values;
-			if(!values) {
-				return;
-			}
-			document.getElementById("actual_amplitude").value = values[0];
-			if (document.getElementById("target_amplitude").value == "") {
-				document.getElementById("target_amplitude").value = values[0];
-			}
-			if (document.getElementById("target_force").value == "") {
-				document.getElementById("target_force").value = values[1];
-			}
+		function init_claw() {
+			rpc_data.method = "write_multiple_registers";
+			rpc_data.params[0] = {
+				"device": "claw",
+				"pin": "40008",
+				"values": [1]
+			};
+			ws.send(JSON.stringify(rpc_data));
 		}
-	}
-}
-connect();
+		function get_claw() {
+			rpc_data.method = "read_holding_registers";
+			rpc_data.params[0] = {
+				"device": "claw",
+				"pin": "40005",
+				"count": 2
+			};
+			ws.send(JSON.stringify(rpc_data));
+		}
+		function set_claw() {
+			var target_force = document.getElementById("target_force").value;
+			var target_amplitude = document.getElementById("target_amplitude").value;
 
-setInterval(()=>{
-	if (ws.readyState == ws.OPEN) {
-		var actual_amplitude = document.getElementById("actual_amplitude").value;
-		var target_amplitude = document.getElementById("target_amplitude").value;
-		if (Math.abs(Number(target_amplitude) - Number(actual_amplitude)) > 3) {
-			get_claw();
+			rpc_data.method = "write_multiple_registers";
+			rpc_data.params[0] = {
+				"device": "claw",
+				"pin": "40000",
+				"values": [Number(target_amplitude), Number(target_force)]
+			};
+			ws.send(JSON.stringify(rpc_data));
 		}
-	}
-	if (ws.readyState == ws.CLOSED) {
+
+		function connect() {
+			ws = new WebSocket("ws://" + window.location.hostname + ":3031");
+
+			ws.onopen = () => {
+				console.log("open ws");
+
+				rpc_data.method = "save_modbus";
+				rpc_data.params[0] = {
+					"name": "claw",
+					"data": {
+						"kind": "MODBUS_FLANGE",
+						"slave_id": 1
+					}
+				};
+				ws.send(JSON.stringify(rpc_data));
+				get_claw();
+			};
+			ws.onmessage = (data) => {
+				var msg = JSON.parse(data.data);
+				if (msg.error) {
+					console.log(msg.error);
+				} else {
+					var values = msg.result.values;
+					if (!values) {
+						return;
+					}
+					document.getElementById("actual_amplitude").value = values[0];
+					if (document.getElementById("target_amplitude").value == "") {
+						document.getElementById("target_amplitude").value = values[0];
+					}
+					if (document.getElementById("target_force").value == "") {
+						document.getElementById("target_force").value = values[1];
+					}
+				}
+			}
+		}
 		connect();
-	}
-}, 1000);
-</script>
+
+		setInterval(() => {
+			if (ws.readyState == ws.OPEN) {
+				var actual_amplitude = document.getElementById("actual_amplitude").value;
+				var target_amplitude = document.getElementById("target_amplitude").value;
+				if (Math.abs(Number(target_amplitude) - Number(actual_amplitude)) > 3) {
+					get_claw();
+				}
+			}
+			if (ws.readyState == ws.CLOSED) {
+				connect();
+			}
+		}, 1000);
+	</script>
 </body>
+
 </html>

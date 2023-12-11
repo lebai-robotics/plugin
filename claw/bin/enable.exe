@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-lpip install lebai-sdk>=0.1.10
+lpip install lebai-sdk>=0.2.0
