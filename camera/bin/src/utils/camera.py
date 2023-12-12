@@ -29,6 +29,7 @@ class Camera(object):
             try:
                 cap = cv2.VideoCapture(index)
                 if cap.isOpened():
+                    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                     cap.set(cv2.CAP_PROP_FRAME_WIDTH, capW)
                     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capH)
                     self.camera = cap
@@ -42,6 +43,7 @@ class Camera(object):
         img_color = None
         if self.kind == "cv":
             try:
+                self.camera.read()
                 ret, frame = self.camera.read()
                 if ret:
                     img_color = frame
