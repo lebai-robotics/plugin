@@ -17,6 +17,8 @@
 	</form>
 	<button onclick="save()">save</button>
 	<button onclick="get()">get</button>
+	<br>
+	<img src="" id="pic">
 </body>
 
 <script>
@@ -88,6 +90,9 @@
 			connect();
 		}
 	}, 1000);
+	setInterval(() => {
+		document.getElementById("pic").src = "../../camera/images/apriltag.jpg?" + Date.now()
+	}, 5000);
 </script>
 
 </html>

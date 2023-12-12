@@ -41,10 +41,10 @@ def main():
     tag_size = float(tag_size)
 
     at_detector = apriltag.Detector(families=tag_family)
-    gray = cv2.imread(os.path.join(images_dir, "tmp.jpg"), cv2.IMREAD_GRAYSCALE)
-    if gray.size == 0:
+    img = cv2.imread(os.path.join(images_dir, "tmp.jpg"), cv2.IMREAD_GRAYSCALE)
+    if img.size == 0:
         exit(2)
-    tags = at_detector.detect(gray, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
+    tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
 
     ret = {}
     for tag in tags:
@@ -52,7 +52,10 @@ def main():
         rot = rotation.rotationMatrixToEulerZyx(tag.pose_R)
         offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
         ret[tag.tag_id] = offset
-
+        for i in range(4):
+            cv2.circle(img, tuple(tag.corners[i].astype(int)), 4, (255, 0, 0), 2)
+        cv2.circle(img, tuple(tag.center.astype(int)), 4, (2, 180, 200), 4)
+    cv2.imwrite(os.path.join(images_dir, "apriltag.jpg"), img)
     print(ret)
 
 if __name__ == '__main__':
