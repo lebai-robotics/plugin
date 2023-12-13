@@ -42,6 +42,7 @@ def main():
 
     at_detector = apriltag.Detector(families=tag_family)
     img = cv2.imread(os.path.join(images_dir, "tmp.jpg"), cv2.IMREAD_GRAYSCALE)
+    _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
     if img.size == 0:
         exit(2)
     tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
@@ -52,10 +53,9 @@ def main():
         rot = rotation.rotationMatrixToEulerZyx(tag.pose_R)
         offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
         ret[tag.tag_id] = offset
-        for i in range(4):
-            cv2.circle(img, tuple(tag.corners[i].astype(int)), 4, (255, 0, 0), 2)
-        cv2.circle(img, tuple(tag.center.astype(int)), 4, (2, 180, 200), 4)
-    cv2.imwrite(os.path.join(images_dir, "apriltag.jpg"), img)
+        for corner in tag.corners:
+            cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 2)
+    cv2.imwrite(os.path.join(images_dir, "apriltag.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 50])
     print(ret)
 
 if __name__ == '__main__':
