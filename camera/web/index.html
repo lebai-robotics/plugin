@@ -9,28 +9,28 @@
 <body>
 	<form>
 		index(深度摄像头填 -1)<br>
-		<input type="text" id="index">
+		<input type="number" id="index">
 		<br>
 		width<br>
-		<input type="text" id="width">
+		<input type="number" id="width">
 		<br>
 		height<br>
-		<input type="text" id="height">
+		<input type="number" id="height">
 		<br>
 		fx<br>
-		<input type="text" id="fx">
+		<input type="number" id="fx" step="0.01">
 		<br>
 		fy<br>
-		<input type="text" id="fy">
+		<input type="number" id="fy" step="0.01">
 		<br>
 		cx<br>
-		<input type="text" id="cx">
+		<input type="number" id="cx" step="0.01">
 		<br>
 		cy<br>
-		<input type="text" id="cy">
+		<input type="number" id="cy" step="0.01">
 		<br>
 		interval(采集频率，单位ms)<br>
-		<input type="text" id="interval">
+		<input type="number" id="interval" step="100">
 		<br>
 	</form>
 	<button onclick="save()">save</button>
