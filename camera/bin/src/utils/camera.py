@@ -6,20 +6,20 @@ import cv2
 
 width = 1280
 height = 720
-
+fps = 10
 default_index = 0
 
 class Camera(object):
     kind = None  # 类型
     camera = None  # 摄像头实例
  
-    def __init__(self, index = default_index, capW = width, capH = height):
+    def __init__(self, index = default_index, capW = width, capH = height, fps = fps):
         if index < 0:
             self.kind = "rs"
             try:
                 pipeline = rs.pipeline()
                 config = rs.config()
-                config.enable_stream(rs.stream.color, capW, capH, rs.format.bgr8, 15)
+                config.enable_stream(rs.stream.color, capW, capH, rs.format.bgr8, fps)
                 pipe_profile = pipeline.start(config)
                 self.camera = pipeline
             except:
@@ -30,6 +30,7 @@ class Camera(object):
                 cap = cv2.VideoCapture(index)
                 if cap.isOpened():
                     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                    cap.set(cv2.CAP_PROP_FPS, fps)
                     cap.set(cv2.CAP_PROP_FRAME_WIDTH, capW)
                     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, capH)
                     self.camera = cap
