@@ -62,7 +62,8 @@ def main():
             frame = cap.getImage()
             if frame is None:
                 break
-            cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame)
+            frame = cv2.GaussianBlur(frame, (5, 5), 0)
+            cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
         else:
             time.sleep(5.0)
     exit(2)
