@@ -41,7 +41,7 @@ def main():
     tag_size = float(tag_size)
 
     at_detector = apriltag.Detector(families=tag_family)
-    img = cv2.imread(os.path.join(images_dir, "tmp.jpg"), cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(os.path.join(images_dir, "tmp.webp"), cv2.IMREAD_GRAYSCALE)
     _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
     if img.size == 0:
         exit(2)
@@ -55,7 +55,7 @@ def main():
         ret[tag.tag_id] = offset
         for corner in tag.corners:
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 2)
-    cv2.imwrite(os.path.join(images_dir, "apriltag.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 50])
+    cv2.imwrite(os.path.join(images_dir, "apriltag.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
     print(ret)
 
 if __name__ == '__main__':

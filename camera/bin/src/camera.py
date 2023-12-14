@@ -64,6 +64,7 @@ def main():
                 break
             frame = cv2.GaussianBlur(frame, (5, 5), 0)
             cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+            cv2.imwrite(os.path.join(images_dir, "tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
         else:
             time.sleep(5.0)
     exit(2)
