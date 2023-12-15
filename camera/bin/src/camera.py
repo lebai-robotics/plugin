@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import os
+import shutil
 import cv2
 import time
 import lebai_sdk
@@ -64,7 +65,9 @@ def main():
                 break
             frame = cv2.GaussianBlur(frame, (5, 5), 0)
             cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+            shutil.move(os.path.join(images_dir, "tmp.jpg"), os.path.join(images_dir, "img.jpg"))
             cv2.imwrite(os.path.join(images_dir, "tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
+            shutil.move(os.path.join(images_dir, "tmp.webp"), os.path.join(images_dir, "img.webp"))
         else:
             time.sleep(5.0)
     exit(2)
