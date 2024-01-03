@@ -42,7 +42,7 @@ def main():
 
     at_detector = apriltag.Detector(families=tag_family)
     img = cv2.imread(os.path.join(images_dir, "img.webp"), cv2.IMREAD_GRAYSCALE)
-    _, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+    #_, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
     if img.size == 0:
         exit(2)
     tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
