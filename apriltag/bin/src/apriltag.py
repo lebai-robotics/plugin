@@ -9,6 +9,8 @@ import lebai_sdk
 import utils.rotation as rotation
 import dt_apriltags as apriltag
 
+apriltag.Detector.__del__ = lambda x: None # 解决段错误问题
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 images_dir = os.path.join(current_dir, "../../../camera/images")
 
@@ -54,7 +56,9 @@ def main():
         offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
         ret[tag.tag_id] = offset
         for corner in tag.corners:
-            cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 2)
+            cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
+            cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 1)
+        cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
     cv2.imwrite(os.path.join(images_dir, "apriltag.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
     print(ret)
 
