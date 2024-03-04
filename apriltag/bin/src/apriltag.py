@@ -61,6 +61,7 @@ def main():
         cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
     cv2.imwrite(os.path.join(images_dir, "apriltag.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
     print(ret)
+    return ret
 
 if __name__ == '__main__':
     main()
