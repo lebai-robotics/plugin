@@ -14,6 +14,9 @@
 		tag_size(单位m)<br>
 		<input type="text" id="tag_size">
 		<br>
+		signal<br>
+		<input type="text" id="signal">
+		<br>
 	</form>
 	<button onclick="save()">save</button>
 	<button onclick="get()">get</button>
@@ -42,6 +45,11 @@
 			"value": document.getElementById("tag_size").value
 		};
 		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_signal",
+			"value": document.getElementById("signal").value
+		};
+		ws.send(JSON.stringify(rpc_data));
 	}
 	function get() {
 		rpc_data.method = "get_item";
@@ -53,6 +61,11 @@
 		rpc_data.id = 42;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_tag_size",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 51;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_signal",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -79,6 +92,9 @@
 				}
 				if (id == 42) {
 					document.getElementById("tag_size").value = value || "0.04";
+				}
+				if (id == 51) {
+					document.getElementById("signal").value = value || "13";
 				}
 			}
 		}
