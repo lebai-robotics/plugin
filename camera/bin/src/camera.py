@@ -64,10 +64,10 @@ def main():
             if frame is None:
                 break
             frame = cv2.GaussianBlur(frame, (5, 5), 0)
-            cv2.imwrite(os.path.join(images_dir, "tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
-            shutil.move(os.path.join(images_dir, "tmp.jpg"), os.path.join(images_dir, "img.jpg"))
-            cv2.imwrite(os.path.join(images_dir, "tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
-            shutil.move(os.path.join(images_dir, "tmp.webp"), os.path.join(images_dir, "img.webp"))
+            cv2.imwrite(os.path.join(images_dir, "img.tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
+            shutil.move(os.path.join(images_dir, "img.tmp.jpg"), os.path.join(images_dir, "img.jpg"))
+            cv2.imwrite(os.path.join(images_dir, "img.tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
+            shutil.move(os.path.join(images_dir, "img.tmp.webp"), os.path.join(images_dir, "img.webp"))
         else:
             time.sleep(5.0)
     exit(2)

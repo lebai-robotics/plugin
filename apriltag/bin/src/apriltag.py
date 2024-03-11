@@ -3,6 +3,8 @@
 ### AprilTag检测位姿
 
 import os
+import shutil
+from contextlib import suppress
 import cv2
 import json
 import time
@@ -60,7 +62,21 @@ def main():
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 1)
         cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
-    cv2.imwrite(os.path.join(images_dir, "apriltag.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
+    cv2.imwrite(os.path.join(images_dir, "apriltag.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.5.webp"), os.path.join(images_dir, "apriltag.6.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.4.webp"), os.path.join(images_dir, "apriltag.5.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.3.webp"), os.path.join(images_dir, "apriltag.4.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.2.webp"), os.path.join(images_dir, "apriltag.3.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.1.webp"), os.path.join(images_dir, "apriltag.2.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.webp"), os.path.join(images_dir, "apriltag.1.webp"))
+    with suppress(FileNotFoundError):
+        shutil.move(os.path.join(images_dir, "apriltag.tmp.webp"), os.path.join(images_dir, "apriltag.webp"))
     print(json.dumps(ret))
     return ret
 

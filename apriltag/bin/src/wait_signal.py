@@ -12,7 +12,8 @@ lebai = lebai_sdk.connect("127.0.0.1", True)
 def main():
     apriltag_signal = (lebai.get_item("plugin_apriltag_signal"))['value']
     if not apriltag_signal:
-        apriltag_signal = 13
+        apriltag_signal = "13"
+    apriltag_signal = int(apriltag_signal)
 
     while True:
         time.sleep(1)
