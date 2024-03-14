@@ -57,6 +57,8 @@ def main():
         pos = tag.pose_t
         rot = rotation.rotationMatrixToEulerZyx(tag.pose_R)
         offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
+        if (offset["x"]**2+offset["y"]**2+offset["z"]**2)**0.5 > 0.8:
+            continue
         ret[tag.tag_id] = offset
         for corner in tag.corners:
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
