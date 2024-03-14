@@ -30,21 +30,32 @@
 	<br>
 	<hr>
 	<hr>
-	<img src="../../camera/images/calibrater.webp" id="pic">
-	<button onclick="record()">记录点位</button>
-	<button onclick="clear()">清除所有点位</button>
+	<img src="../../camera/images/camera_calibrater.webp" id="pic">
 	<br>
+	采集至少3张不同位置的图片后再点击“标定”
+	<br>
+	<button onclick="record()">记录点位</button>
+	<button onclick="clear_data()">清除所有点位</button>
 	<button onclick="calibrate()">标定</button>
+	<br>
+	相机内参<br>
+	<textarea id="matrix" rows="3"></textarea>
+	<br>
+	相机畸变<br>
+	<textarea id="dist_coeffs" rows="3"></textarea>
+	<br>
+	相机位置<br>
 	<textarea id="data" rows="3"></textarea>
-	<img src="../../camera/images/calibrater.9.webp" id="pic9">
-	<img src="../../camera/images/calibrater.8.webp" id="pic8">
-	<img src="../../camera/images/calibrater.7.webp" id="pic7">
-	<img src="../../camera/images/calibrater.6.webp" id="pic6">
-	<img src="../../camera/images/calibrater.5.webp" id="pic5">
-	<img src="../../camera/images/calibrater.4.webp" id="pic4">
-	<img src="../../camera/images/calibrater.3.webp" id="pic3">
-	<img src="../../camera/images/calibrater.2.webp" id="pic2">
-	<img src="../../camera/images/calibrater.1.webp" id="pic1">
+	<br>
+	<img src="../../camera/images/camera_calibrater.9.webp" id="pic9">
+	<img src="../../camera/images/camera_calibrater.8.webp" id="pic8">
+	<img src="../../camera/images/camera_calibrater.7.webp" id="pic7">
+	<img src="../../camera/images/camera_calibrater.6.webp" id="pic6">
+	<img src="../../camera/images/camera_calibrater.5.webp" id="pic5">
+	<img src="../../camera/images/camera_calibrater.4.webp" id="pic4">
+	<img src="../../camera/images/camera_calibrater.3.webp" id="pic3">
+	<img src="../../camera/images/camera_calibrater.2.webp" id="pic2">
+	<img src="../../camera/images/camera_calibrater.1.webp" id="pic1">
 </body>
 
 <script>
@@ -108,6 +119,16 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 61;
 		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_camera_matrix",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 62;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_dist_coeffs",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 63;
+		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_data",
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -122,7 +143,7 @@
 		ws.send(JSON.stringify(rpc_data));
 		wait_cmd_finish();
 	}
-	function clear() {
+	function clear_data() {
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
@@ -153,15 +174,15 @@
 		}, 2000);
 	}
 	function refresh_img() {
-		document.getElementById("pic1").src = "../../camera/images/calibrater.1.webp?" + Date.now();
-		document.getElementById("pic2").src = "../../camera/images/calibrater.2.webp?" + Date.now();
-		document.getElementById("pic3").src = "../../camera/images/calibrater.3.webp?" + Date.now();
-		document.getElementById("pic4").src = "../../camera/images/calibrater.4.webp?" + Date.now();
-		document.getElementById("pic5").src = "../../camera/images/calibrater.5.webp?" + Date.now();
-		document.getElementById("pic6").src = "../../camera/images/calibrater.6.webp?" + Date.now();
-		document.getElementById("pic7").src = "../../camera/images/calibrater.7.webp?" + Date.now();
-		document.getElementById("pic8").src = "../../camera/images/calibrater.8.webp?" + Date.now();
-		document.getElementById("pic9").src = "../../camera/images/calibrater.9.webp?" + Date.now();
+		document.getElementById("pic1").src = "../../camera/images/camera_calibrater.1.webp?" + Date.now();
+		document.getElementById("pic2").src = "../../camera/images/camera_calibrater.2.webp?" + Date.now();
+		document.getElementById("pic3").src = "../../camera/images/camera_calibrater.3.webp?" + Date.now();
+		document.getElementById("pic4").src = "../../camera/images/camera_calibrater.4.webp?" + Date.now();
+		document.getElementById("pic5").src = "../../camera/images/camera_calibrater.5.webp?" + Date.now();
+		document.getElementById("pic6").src = "../../camera/images/camera_calibrater.6.webp?" + Date.now();
+		document.getElementById("pic7").src = "../../camera/images/camera_calibrater.7.webp?" + Date.now();
+		document.getElementById("pic8").src = "../../camera/images/camera_calibrater.8.webp?" + Date.now();
+		document.getElementById("pic9").src = "../../camera/images/camera_calibrater.9.webp?" + Date.now();
 	}
 
 	function connect() {
@@ -197,6 +218,12 @@
 					window.lebai_plugin_camera_calibrater_cmd = value || "";
 				}
 				if (id == 61) {
+					document.getElementById("matrix").value = value || "";
+				}
+				if (id == 62) {
+					document.getElementById("dist_coeffs").value = value || "";
+				}
+				if (id == 63) {
 					document.getElementById("data").value = value || "";
 				}
 			}
@@ -210,7 +237,7 @@
 		}
 	}, 1000);
 	setInterval(() => {
-		document.getElementById("pic").src = "../../camera/images/calibrater.webp?" + Date.now()
+		document.getElementById("pic").src = "../../camera/images/camera_calibrater.webp?" + Date.now()
 	}, 1000);
 </script>
 

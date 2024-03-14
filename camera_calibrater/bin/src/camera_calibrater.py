@@ -4,6 +4,7 @@
 
 import os
 import shutil
+import numpy as np
 from contextlib import suppress
 import cv2
 import json
@@ -27,11 +28,11 @@ def get_row_col_width():
     if not row:
         row = "8"
     row = int(row)
-    col = (lebai.get_item("plugin_camera_col"))['value']
+    col = (lebai.get_item("plugin_camera_calibrater_col"))['value']
     if not col:
         col = "5"
     col = int(col)
-    width = (lebai.get_item("plugin_camera_width"))['value']
+    width = (lebai.get_item("plugin_camera_calibrater_width"))['value']
     if not width:
         width = "0.03"
     width = float(width)
@@ -49,7 +50,7 @@ def get_cmd():
     return cmd
 def get_pose(i):
     pose = (lebai.get_item("plugin_camera_calibrater_pose_{}".format(i)))['value']
-    if not cmd:
+    if not pose:
         return None
     return json.loads(pose)
 
@@ -61,7 +62,7 @@ def clear_imgs():
 def main():
     while True:
         time.sleep(1)
-        img = cv2.imread(os.path.join(images_dir, "img.webp"), cv2.IMREAD_GRAYSCALE)
+        img = cv2.imread(os.path.join(images_dir, "img.webp"))
         if img.size == 0:
             continue
         row, col, width = get_row_col_width()
@@ -69,22 +70,23 @@ def main():
         if ret:
             if len(corners) == row * col:
                 cv2.drawChessboardCorners(img, (row,col), corners, ret)
-                cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
-                shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
+        cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
+        shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
 
         cmd = get_cmd()
         if not cmd or cmd == "":
             continue
         if cmd == "record":
+            lebai_real = lebai_sdk.connect("127.0.0.1", False)
             i = get_i()+1
-            lebai.set_item("plugin_camera_calibrater_i", i)
+            lebai.set_item("plugin_camera_calibrater_i", str(i))
             shutil.copy(os.path.join(images_dir, "img.webp"), os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
-            pose = (lebai.get_kin_data())["actual_flange_pose"]
+            pose = (lebai_real.get_kin_data())["actual_flange_pose"]
             lebai.set_item("plugin_camera_calibrater_pose_{}".format(i), json.dumps(pose))
         if cmd == "clear":
             # 清除数据
             clear_imgs()
-            lebai.set_item("plugin_camera_calibrater_i", 0)
+            lebai.set_item("plugin_camera_calibrater_i", str(0))
         if cmd == "calibrate":
             # 标定
             cp_int = np.zeros((row * col, 3), np.float32)
@@ -107,19 +109,26 @@ def main():
                 p = get_pose(i)
                 if not p:
                     continue
-                R_end2base.append(rotation.eulerZyzToRotationMatrix([p.rz, p.ry, p.rx]))
-                T_end2base.append(np.array([p.x, p.y, p.z]))
+                R_end2base.append(rotation.eulerZyzToRotationMatrix([p["rz"], p["ry"], p["rx"]]))
+                T_end2base.append(np.array([p["x"], p["y"], p["z"]]))
                 obj_points.append(cp_world)
                 image_points.append(corners)
             # 进行相机标定
-            ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, gray.shape[::-1], None, None)
-            lebai.set_item("plugin_camera_calibrater_camera_matrix", camera_matrix) # 相机内参
-            lebai.set_item("plugin_camera_calibrater_dist_coeffs", dist_coeffs) # 相机畸变
+            image_points_len = len(image_points)
+            if image_points_len < 3:
+                print("image not enough")
+                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                continue
+            ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
+            if not ret:
+                print("failed to calibrateCamera")
+                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                continue
+            lebai.set_item("plugin_camera_calibrater_camera_matrix", json.dumps(camera_matrix.tolist())) # 相机内参
+            lebai.set_item("plugin_camera_calibrater_dist_coeffs", json.dumps(dist_coeffs.tolist())) # 相机畸变
             # 手眼标定
             for i in range(0,len(image_points)):
                 ret, rvec, tvec = cv2.solvePnP(cp_world, image_points[i], camera_matrix, distCoeffs=dist_coeffs)
-                if not ret:
-                    continue
                 RT = np.column_stack(((cv2.Rodrigues(rvec))[0], tvec))
                 R_chess2cam.append(RT[:3, :3])
                 T_chess2cam.append(RT[:3, 3].reshape((3, 1)))
@@ -127,12 +136,12 @@ def main():
             if tp == "inHand":
                 R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
                 r = rotation.rotationMatrixToEulerZyx(R)
-                data = {x:T[0],y:T[1],z:T[2],rz:r[0],ry:r[1],rx:r[2]}
+                data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
                 lebai.set_item("plugin_camera_calibrater_data", json.dumps(data))
 
             clear_imgs()
-            lebai.set_item("plugin_camera_calibrater_i", 0)
-        lebai.set_item("plugin_camera_calibrater_cmd", None)
+            lebai.set_item("plugin_camera_calibrater_i", str(0))
+        lebai.set_item("plugin_camera_calibrater_cmd", "")
 
 if __name__ == '__main__':
     main()
