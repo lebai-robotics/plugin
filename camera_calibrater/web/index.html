@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>相机标定</title>
+</head>
+
+<body>
+	<h2>标定完成后，请务必禁用插件，否则，插件会一直在后台占用资源</h2>
+	<form>
+		相机位置<br>
+		<select id="type">
+			<option value="inHand" selected>眼在手上</option>
+			<option value="toHand">眼在手外</option>
+		</select>
+		<br>
+		角点行数<br>
+		<input type="text" id="row">
+		<br>
+		角点列数<br>
+		<input type="text" id="col">
+		<br>
+		格子长度(单位m)<br>
+		<input type="text" id="width">
+		<br>
+	</form>
+	<button onclick="save()">save</button>
+	<button onclick="get()">get</button>
+	<br>
+	<hr>
+	<hr>
+	<img src="../../camera/images/calibrater.webp" id="pic">
+	<button onclick="record()">记录点位</button>
+	<button onclick="clear()">清除所有点位</button>
+	<br>
+	<button onclick="calibrate()">标定</button>
+	<textarea id="data" rows="3"></textarea>
+	<img src="../../camera/images/calibrater.9.webp" id="pic9">
+	<img src="../../camera/images/calibrater.8.webp" id="pic8">
+	<img src="../../camera/images/calibrater.7.webp" id="pic7">
+	<img src="../../camera/images/calibrater.6.webp" id="pic6">
+	<img src="../../camera/images/calibrater.5.webp" id="pic5">
+	<img src="../../camera/images/calibrater.4.webp" id="pic4">
+	<img src="../../camera/images/calibrater.3.webp" id="pic3">
+	<img src="../../camera/images/calibrater.2.webp" id="pic2">
+	<img src="../../camera/images/calibrater.1.webp" id="pic1">
+</body>
+
+<script>
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_type",
+			"value": document.getElementById("type").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_row",
+			"value": document.getElementById("row").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_col",
+			"value": document.getElementById("col").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_width",
+			"value": document.getElementById("width").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 40;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_type",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 41;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_row",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 42;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_col",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 43;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_width",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 51;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 61;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_data",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function record() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd",
+			"value": "record"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function clear() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd",
+			"value": "clear"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function calibrate() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd",
+			"value": "calibrate"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function wait_cmd_finish() {
+		let timer;
+		timer = setInterval(() => {
+			get();
+			if (window.lebai_plugin_camera_calibrater_cmd == "") {
+				clearInterval(timer);
+				refresh_img();
+			}
+		}, 2000);
+	}
+	function refresh_img() {
+		document.getElementById("pic1").src = "../../camera/images/calibrater.1.webp?" + Date.now();
+		document.getElementById("pic2").src = "../../camera/images/calibrater.2.webp?" + Date.now();
+		document.getElementById("pic3").src = "../../camera/images/calibrater.3.webp?" + Date.now();
+		document.getElementById("pic4").src = "../../camera/images/calibrater.4.webp?" + Date.now();
+		document.getElementById("pic5").src = "../../camera/images/calibrater.5.webp?" + Date.now();
+		document.getElementById("pic6").src = "../../camera/images/calibrater.6.webp?" + Date.now();
+		document.getElementById("pic7").src = "../../camera/images/calibrater.7.webp?" + Date.now();
+		document.getElementById("pic8").src = "../../camera/images/calibrater.8.webp?" + Date.now();
+		document.getElementById("pic9").src = "../../camera/images/calibrater.9.webp?" + Date.now();
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 40) {
+					document.getElementById("type").value = value || "inHand";
+				}
+				if (id == 41) {
+					document.getElementById("row").value = value || "8";
+				}
+				if (id == 42) {
+					document.getElementById("col").value = value || "5";
+				}
+				if (id == 43) {
+					document.getElementById("width").value = value || "0.03";
+				}
+				if (id == 51) {
+					window.lebai_plugin_camera_calibrater_cmd = value || "";
+				}
+				if (id == 61) {
+					document.getElementById("data").value = value || "";
+				}
+			}
+		}
+	}
+	connect();
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+	setInterval(() => {
+		document.getElementById("pic").src = "../../camera/images/calibrater.webp?" + Date.now()
+	}, 1000);
+</script>
+
+</html>
