@@ -59,6 +59,14 @@ def clear_imgs():
         with suppress(FileNotFoundError):
             os.remove(os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
 
+def shoot_img():
+    lebai.set_item("plugin_camera_cmd", "shoot")
+    while True:
+        time.sleep(0.1)
+        cmd = (lebai.get_item("plugin_camera_cmd"))['value']
+        if not cmd or cmd == "":
+            break
+
 def main():
     while True:
         time.sleep(1)
@@ -66,6 +74,7 @@ def main():
         if not cmd or cmd == "":
             continue
         if cmd == "preview":
+            shoot_img()
             img = cv2.imread(os.path.join(images_dir, "img.webp"))
             if img.size == 0:
                 lebai.set_item("plugin_camera_calibrater_cmd", "")
@@ -78,6 +87,7 @@ def main():
             cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
             shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
         if cmd == "record":
+            shoot_img()
             lebai_real = lebai_sdk.connect("127.0.0.1", False)
             i = get_i()+1
             lebai.set_item("plugin_camera_calibrater_i", str(i))

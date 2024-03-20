@@ -20,7 +20,16 @@ images_dir = os.path.join(current_dir, "../../../camera/images")
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
+def shoot_img():
+    lebai.set_item("plugin_camera_cmd", "shoot")
+    while True:
+        time.sleep(0.1)
+        cmd = (lebai.get_item("plugin_camera_cmd"))['value']
+        if not cmd or cmd == "":
+            break
+
 def main():
+    shoot_img()
     camera_matrix = (lebai.get_item("plugin_camera_calibrater_camera_matrix"))['value']
     camera_matrix = json.loads(camera_matrix)
     fx = camera_matrix[0][0]
