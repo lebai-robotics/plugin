@@ -3,6 +3,7 @@ set -e
 cd "$(dirname "$0")"
 
 mkdir -p .oss
+arr=()
 for dir in `ls`
 do
     if [ ! -s $dir/plugin.json ]; then
@@ -20,10 +21,21 @@ do
 
     cd $dir
     zip -q -r ../.oss/$dir.zip *
+    obj="{\"name\":\"$dir\", \"url\":\"https://l-os.lebai.ltd/plugin/${dir}.zip\"}"
+    arr+=("$obj")
     cd ../
 done
 
-ossutil -e $AWS_ENDPOINT -i $AWS_ACCESS_KEY_ID -k $AWS_SECRET_ACCESS_KEY cp -f -u ./info.json oss://l-os/plugin/
+# 构造 JSON 数组
+json="["
+for ((i=0; i<${#arr[@]}; i++)); do
+  json+=" ${arr[$i]}"
+  if [ $i -lt $((${#arr[@]}-1)) ]; then
+    json+=","
+  fi
+done
+json+=" ]"
+echo $json > .oss/info.json
 
 cd .oss/
 for file in `ls *.zip`
