@@ -12,14 +12,13 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
-def get_interval():
-    interval = (lebai.get_item("plugin_camera_interval"))['value']
-    if not interval:
-        interval = "0"
-    interval = float(interval)
-    return interval/1000
+def get_cmd():
+    cmd = (lebai.get_item("plugin_camera_cmd"))['value']
+    if not cmd:
+        cmd = ""
+    return cmd
 
-def main():
+def init_camera():
     index = (lebai.get_item("plugin_camera_index"))['value']
     if not index:
         index = "-1"
@@ -32,24 +31,12 @@ def main():
     if not height:
         height = "720"
     height = int(height)
-    fx = (lebai.get_item("plugin_camera_fx"))['value']
-    if not fx:
-        fx = "900"
-    fx = float(fx)
-    fy = (lebai.get_item("plugin_camera_fy"))['value']
-    if not fy:
-        fy = "900"
-    fy = float(fy)
-    cx = (lebai.get_item("plugin_camera_cx"))['value']
-    if not cx:
-        cx = "640"
-    cx = float(cx)
-    cy = (lebai.get_item("plugin_camera_cy"))['value']
-    if not cy:
-        cy = "360"
-    cy = float(cy)
 
     cap = camera.Camera(index, width, height)
+    return cap
+
+def main():
+    cap = init_camera()
     if not cap.isOpened():
         exit(1)
 
@@ -57,9 +44,11 @@ def main():
     if not os.path.exists(images_dir):
         os.mkdir(images_dir)
     while True:
-        interval = get_interval()
-        if interval > 0:
-            time.sleep(interval)
+        time.sleep(0.1)
+        cmd = get_cmd()
+        if not cmd or cmd == "":
+            continue
+        if cmd == "shoot":
             frame = cap.getImage()
             if frame is None:
                 break
@@ -68,8 +57,10 @@ def main():
             shutil.move(os.path.join(images_dir, "img.tmp.jpg"), os.path.join(images_dir, "img.jpg"))
             cv2.imwrite(os.path.join(images_dir, "img.tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
             shutil.move(os.path.join(images_dir, "img.tmp.webp"), os.path.join(images_dir, "img.webp"))
-        else:
-            time.sleep(5.0)
+        if cmd == "reinit":
+            cap.release()
+            cap = init_camera()
+        lebai.set_item("plugin_camera_cmd", "")
     exit(2)
     # 释放摄像头
     cap.release()

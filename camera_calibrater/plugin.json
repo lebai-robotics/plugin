@@ -1,5 +1,6 @@
 {
   "name": "camera_calibrater",
   "description": "相机标定",
-  "homepage": "lebai.ltd"
+  "homepage": "lebai.ltd",
+  "auto_restart": true
 }

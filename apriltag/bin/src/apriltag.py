@@ -21,22 +21,12 @@ lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
 def main():
-    fx = (lebai.get_item("plugin_camera_fx"))['value']
-    if not fx:
-        fx = "900"
-    fx = float(fx)
-    fy = (lebai.get_item("plugin_camera_fy"))['value']
-    if not fy:
-        fy = "900"
-    fy = float(fy)
-    cx = (lebai.get_item("plugin_camera_cx"))['value']
-    if not cx:
-        cx = "640"
-    cx = float(cx)
-    cy = (lebai.get_item("plugin_camera_cy"))['value']
-    if not cy:
-        cy = "360"
-    cy = float(cy)
+    camera_matrix = (lebai.get_item("plugin_camera_calibrater_camera_matrix"))['value']
+    camera_matrix = json.loads(camera_matrix)
+    fx = camera_matrix[0][0]
+    fy = camera_matrix[1][1]
+    cx = camera_matrix[0][2]
+    cy = camera_matrix[1][2]
     tag_family = (lebai.get_item("plugin_apriltag_tag_family"))['value']
     if not tag_family:
         tag_family = "tag36h11"

@@ -7,7 +7,6 @@
 </head>
 
 <body>
-	<h2>标定完成后，请务必禁用插件，否则，插件会一直在后台占用资源</h2>
 	<form>
 		相机位置<br>
 		<select id="type">
@@ -26,13 +25,15 @@
 		<br>
 	</form>
 	<button onclick="save()">save</button>
-	<button onclick="get()">get</button>
+	<button onclick="get()">refresh</button>
 	<br>
 	<hr>
 	<hr>
 	<img src="../../camera/images/camera_calibrater.webp" id="pic">
 	<br>
 	采集至少3张不同位置的图片后再点击“标定”
+	<br>
+	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
 	<br>
 	<button onclick="record()">记录点位</button>
 	<button onclick="clear_data()">清除所有点位</button>
@@ -171,7 +172,7 @@
 				clearInterval(timer);
 				refresh_img();
 			}
-		}, 2000);
+		}, 500);
 	}
 	function refresh_img() {
 		document.getElementById("pic1").src = "../../camera/images/camera_calibrater.1.webp?" + Date.now();
@@ -236,8 +237,19 @@
 			connect();
 		}
 	}, 1000);
-	setInterval(() => {
+	
+	function preview() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd",
+			"value": "preview"
+		};
+		ws.send(JSON.stringify(rpc_data));
 		document.getElementById("pic").src = "../../camera/images/camera_calibrater.webp?" + Date.now()
+	}
+	setInterval(() => {
+		preview();
 	}, 1000);
 </script>
 

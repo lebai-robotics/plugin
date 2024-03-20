@@ -17,30 +17,14 @@
 		height<br>
 		<input type="number" id="height">
 		<br>
-		fx<br>
-		<input type="number" id="fx" step="0.01">
-		<br>
-		fy<br>
-		<input type="number" id="fy" step="0.01">
-		<br>
-		cx<br>
-		<input type="number" id="cx" step="0.01">
-		<br>
-		cy<br>
-		<input type="number" id="cy" step="0.01">
-		<br>
-		interval(采集频率，单位ms)<br>
-		<input type="number" id="interval" step="100">
-		<br>
 	</form>
 	<button onclick="save()">save</button>
-	<button onclick="get()">get</button>
+	<button onclick="get()">refresh</button>
 	<br>
-	<img src="" id="pic">
+	<img src="../images/img.webp" id="pic">
 </body>
 
 <script>
-	var timer_pic = null;
 	var ws;
 	var rpc_data = {
 		"jsonrpc": "2.0",
@@ -67,28 +51,8 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_camera_fx",
-			"value": document.getElementById("fx").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_camera_fy",
-			"value": document.getElementById("fy").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_camera_cx",
-			"value": document.getElementById("cx").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_camera_cy",
-			"value": document.getElementById("cy").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_camera_interval",
-			"value": document.getElementById("interval").value
+			"key": "plugin_camera_cmd",
+			"value": "reinit"
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -107,31 +71,6 @@
 		rpc_data.id = 23;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_height",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 31;
-		rpc_data.params[0] = {
-			"key": "plugin_camera_fx",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 32;
-		rpc_data.params[0] = {
-			"key": "plugin_camera_fy",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 33;
-		rpc_data.params[0] = {
-			"key": "plugin_camera_cx",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 34;
-		rpc_data.params[0] = {
-			"key": "plugin_camera_cy",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 41;
-		rpc_data.params[0] = {
-			"key": "plugin_camera_interval",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -162,34 +101,24 @@
 				if (id == 23) {
 					document.getElementById("height").value = value || "720";
 				}
-				if (id == 31) {
-					document.getElementById("fx").value = value || "900";
-				}
-				if (id == 32) {
-					document.getElementById("fy").value = value || "900";
-				}
-				if (id == 33) {
-					document.getElementById("cx").value = value || "640";
-				}
-				if (id == 34) {
-					document.getElementById("cy").value = value || "360";
-				}
-				if (id == 41) {
-					var interval = value || "0";
-					document.getElementById("interval").value = interval;
-					if (timer_pic) {
-						clearInterval(timer_pic);
-					}
-					if (interval != "0") {
-						timer_pic = setInterval(() => {
-							document.getElementById("pic").src = "../images/img.webp?" + Date.now()
-						}, Number(interval));
-					}
-				}
 			}
 		}
 	}
 	connect();
+
+	function shoot() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cmd",
+			"value": "shoot"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		document.getElementById("pic").src = "../images/img.webp?" + Date.now();
+	}
+	setInterval(() => {
+		shoot();
+	}, 1000);
 
 	setInterval(() => {
 		if (ws.readyState == ws.CLOSED) {

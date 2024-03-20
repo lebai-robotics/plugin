@@ -62,20 +62,21 @@ def clear_imgs():
 def main():
     while True:
         time.sleep(1)
-        img = cv2.imread(os.path.join(images_dir, "img.webp"))
-        if img.size == 0:
-            continue
-        row, col, width = get_row_col_width()
-        ret, corners = cv2.findChessboardCorners(img, (row, col), None)
-        if ret:
-            if len(corners) == row * col:
-                cv2.drawChessboardCorners(img, (row,col), corners, ret)
-        cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
-        shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
-
         cmd = get_cmd()
         if not cmd or cmd == "":
             continue
+        if cmd == "preview":
+            img = cv2.imread(os.path.join(images_dir, "img.webp"))
+            if img.size == 0:
+                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                continue
+            row, col, width = get_row_col_width()
+            ret, corners = cv2.findChessboardCorners(img, (row, col), None)
+            if ret:
+                if len(corners) == row * col:
+                    cv2.drawChessboardCorners(img, (row,col), corners, ret)
+            cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
+            shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
         if cmd == "record":
             lebai_real = lebai_sdk.connect("127.0.0.1", False)
             i = get_i()+1

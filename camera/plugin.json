@@ -1,5 +1,6 @@
 {
   "name": "camera",
   "description": "采集摄像头图片并保存到文件系统",
-  "homepage": "lebai.ltd"
+  "homepage": "lebai.ltd",
+  "auto_restart": true
 }
