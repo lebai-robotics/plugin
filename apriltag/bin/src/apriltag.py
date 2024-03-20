@@ -43,13 +43,21 @@ def main():
     tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
 
     ret = {}
+    lebai_real = lebai_sdk.connect("127.0.0.1", False)
+    flange_pose = (lebai_real.get_kin_data())["actual_flange_pose"]
+    cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])
+    cam = pose_times(flange_pose, cam2flange)
     for tag in tags:
         pos = tag.pose_t
         rot = rotation.rotationMatrixToEulerZyx(tag.pose_R)
-        offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
-        if (offset["x"]**2+offset["y"]**2+offset["z"]**2)**0.5 > 0.8:
+        tag = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
+        if (tag["x"]**2+tag["y"]**2+tag["z"]**2)**0.5 > 0.8:
             continue
-        ret[tag.tag_id] = offset
+        tag_pos_offset = {tag.x, tag.y, tag.z, 0, 0, 0}
+        tag_rot_offset = {0, 0, 0, tag.rz, tag.ry, tag.rx}
+        tag_pose = pose_times(cam, tag_pos_offset)
+        tag_pose = pose_times(tag_pose, tag_rot_offset)
+        ret[tag.tag_id] = tag_pose
         for corner in tag.corners:
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 1)

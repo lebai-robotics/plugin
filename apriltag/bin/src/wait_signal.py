@@ -19,11 +19,12 @@ def main():
         time.sleep(1)
         apriltag_id = lebai.get_signal(apriltag_signal)
         if apriltag_id >= 0:
+            lebai.save_pose("apriltag"+apriltag_id, None)
             apriltag_data = subprocess.check_output(['lpy', apriltag_plugin])
             apriltag_data = json.loads(apriltag_data)
             apriltag_pose = apriltag_data.get(str(apriltag_id), None)
             print(apriltag_id, apriltag_data)
-            lebai.save_pose("apriltag", apriltag_pose)
+            lebai.save_pose("apriltag"+apriltag_id, apriltag_pose)
 
             lebai.set_signal(apriltag_signal, -1)
 
