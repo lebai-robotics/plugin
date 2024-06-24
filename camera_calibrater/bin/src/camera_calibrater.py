@@ -18,6 +18,11 @@ images_dir = os.path.join(current_dir, "../../../camera/images")
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
+def get_ip():
+    val = (lebai.get_item("plugin_camera_calibrater_ip"))['value']
+    if not val:
+        val = "127.0.0.1"
+    return val
 def get_type():
     tp = (lebai.get_item("plugin_camera_calibrater_type"))['value']
     if not tp:
@@ -88,7 +93,7 @@ def main():
             shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
         if cmd == "record":
             shoot_img()
-            lebai_real = lebai_sdk.connect("127.0.0.1", False)
+            lebai_real = lebai_sdk.connect(get_ip(), False)
             i = get_i()+1
             lebai.set_item("plugin_camera_calibrater_i", str(i))
             shutil.copy(os.path.join(images_dir, "img.webp"), os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))

@@ -20,6 +20,11 @@ images_dir = os.path.join(current_dir, "../../../camera/images")
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
+def get_ip():
+    val = (lebai.get_item("plugin_camera_calibrater_ip"))['value']
+    if not val:
+        val = "127.0.0.1"
+    return val
 def shoot_img():
     lebai.set_item("plugin_camera_cmd", "shoot")
     while True:
@@ -52,7 +57,7 @@ def main():
     tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
 
     ret = {}
-    lebai_real = lebai_sdk.connect("127.0.0.1", False)
+    lebai_real = lebai_sdk.connect(get_ip(), False)
     flange_pose = (lebai_real.get_kin_data())["actual_flange_pose"]
     cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])
     cam = lebai_real.pose_trans(flange_pose, cam2flange)

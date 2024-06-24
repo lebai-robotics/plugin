@@ -8,6 +8,9 @@
 
 <body>
 	<form>
+		手臂IP<br>
+		<input type="text" id="ip">
+		<br>
 		相机位置<br>
 		<select id="type">
 			<option value="inHand" selected>眼在手上</option>
@@ -71,6 +74,11 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_ip",
+			"value": document.getElementById("ip").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_type",
 			"value": document.getElementById("type").value
 		};
@@ -93,6 +101,11 @@
 	}
 	function get() {
 		rpc_data.method = "get_item";
+		rpc_data.id = 30;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_ip",
+		};
+		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 40;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_type",
@@ -202,6 +215,9 @@
 				var value = msg.result.value;
 				if (value === undefined) {
 					return;
+				}
+				if (id == 30) {
+					document.getElementById("ip").value = value || "127.0.0.1";
 				}
 				if (id == 40) {
 					document.getElementById("type").value = value || "inHand";
