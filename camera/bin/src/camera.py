@@ -13,10 +13,14 @@ lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
 
 def get_cmd():
-    cmd = (lebai.get_item("plugin_camera_cmd"))['value']
-    if not cmd:
-        cmd = ""
-    return cmd
+    cmd = (lebai.get_item("plugin_camera_cmd_reinit"))['value']
+    if cmd and cmd != "":
+        return "reinit"
+    cmd = (lebai.get_item("plugin_camera_cmd_shoot"))['value']
+    if cmd and cmd != "":
+        return "shoot"
+
+    return ""
 
 def init_camera():
     index = (lebai.get_item("plugin_camera_index"))['value']
@@ -60,7 +64,7 @@ def main():
         if cmd == "reinit":
             cap.release()
             cap = init_camera()
-        lebai.set_item("plugin_camera_cmd", "")
+        lebai.set_item("plugin_camera_cmd_{}".format(cmd), "")
     exit(2)
     # 释放摄像头
     cap.release()

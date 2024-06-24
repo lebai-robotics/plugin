@@ -51,7 +51,7 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_camera_cmd",
+			"key": "plugin_camera_cmd_reinit",
 			"value": "reinit"
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -110,7 +110,7 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_camera_cmd",
+			"key": "plugin_camera_cmd_shoot",
 			"value": "shoot"
 		};
 		ws.send(JSON.stringify(rpc_data));

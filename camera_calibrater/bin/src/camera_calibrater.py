@@ -49,10 +49,20 @@ def get_i():
     i = int(i)
     return i
 def get_cmd():
-    cmd = (lebai.get_item("plugin_camera_calibrater_cmd"))['value']
-    if not cmd:
-        cmd = ""
-    return cmd
+    cmd = (lebai.get_item("plugin_camera_calibrater_cmd_clear"))['value']
+    if cmd and cmd != "":
+        return "clear"
+    cmd = (lebai.get_item("plugin_camera_calibrater_cmd_calibrate"))['value']
+    if cmd and cmd != "":
+        return "calibrate"
+    cmd = (lebai.get_item("plugin_camera_calibrater_cmd_record"))['value']
+    if cmd and cmd != "":
+        return "record"
+    cmd = (lebai.get_item("plugin_camera_calibrater_cmd_preview"))['value']
+    if cmd and cmd != "":
+        return "preview"
+
+    return ""
 def get_pose(i):
     pose = (lebai.get_item("plugin_camera_calibrater_pose_{}".format(i)))['value']
     if not pose:
@@ -65,10 +75,10 @@ def clear_imgs():
             os.remove(os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
 
 def shoot_img():
-    lebai.set_item("plugin_camera_cmd", "shoot")
+    lebai.set_item("plugin_camera_cmd_shoot", "shoot")
     while True:
         time.sleep(0.1)
-        cmd = (lebai.get_item("plugin_camera_cmd"))['value']
+        cmd = (lebai.get_item("plugin_camera_cmd_shoot"))['value']
         if not cmd or cmd == "":
             break
 
@@ -82,7 +92,7 @@ def main():
             shoot_img()
             img = cv2.imread(os.path.join(images_dir, "img.webp"))
             if img.size == 0:
-                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                lebai.set_item("plugin_camera_calibrater_cmd_preview", "")
                 continue
             row, col, width = get_row_col_width()
             ret, corners = cv2.findChessboardCorners(img, (row, col), None)
@@ -133,12 +143,12 @@ def main():
             image_points_len = len(image_points)
             if image_points_len < 3:
                 print("image not enough")
-                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
             ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
             if not ret:
                 print("failed to calibrateCamera")
-                lebai.set_item("plugin_camera_calibrater_cmd", "")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
             lebai.set_item("plugin_camera_calibrater_camera_matrix", json.dumps(camera_matrix.tolist())) # 相机内参
             lebai.set_item("plugin_camera_calibrater_dist_coeffs", json.dumps(dist_coeffs.tolist())) # 相机畸变
@@ -157,7 +167,7 @@ def main():
 
             clear_imgs()
             lebai.set_item("plugin_camera_calibrater_i", str(0))
-        lebai.set_item("plugin_camera_calibrater_cmd", "")
+        lebai.set_item("plugin_camera_calibrater_cmd_{}".format(cmd), "")
 
 if __name__ == '__main__':
     main()

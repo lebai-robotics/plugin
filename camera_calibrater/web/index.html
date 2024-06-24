@@ -128,7 +128,17 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 51;
 		rpc_data.params[0] = {
-			"key": "plugin_camera_calibrater_cmd",
+			"key": "plugin_camera_calibrater_cmd_record",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 52;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_clear",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 53;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_calibrate",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 61;
@@ -151,7 +161,7 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_camera_calibrater_cmd",
+			"key": "plugin_camera_calibrater_cmd_record",
 			"value": "record"
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -161,7 +171,7 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_camera_calibrater_cmd",
+			"key": "plugin_camera_calibrater_cmd_clear",
 			"value": "clear"
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -171,21 +181,22 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_camera_calibrater_cmd",
+			"key": "plugin_camera_calibrater_cmd_calibrate",
 			"value": "calibrate"
 		};
 		ws.send(JSON.stringify(rpc_data));
 		wait_cmd_finish();
 	}
 	function wait_cmd_finish() {
+		get();
 		let timer;
 		timer = setInterval(() => {
 			get();
-			if (window.lebai_plugin_camera_calibrater_cmd == "") {
+			if (window.cmd_record == "" && window.cmd_clear == "" && window.cmd_calibrate == "") {
 				clearInterval(timer);
 				refresh_img();
 			}
-		}, 500);
+		}, 1000);
 	}
 	function refresh_img() {
 		document.getElementById("pic1").src = "../../camera/images/camera_calibrater.1.webp?" + Date.now();
@@ -232,7 +243,13 @@
 					document.getElementById("width").value = value || "0.03";
 				}
 				if (id == 51) {
-					window.lebai_plugin_camera_calibrater_cmd = value || "";
+					window.cmd_record = value || "";
+				}
+				if (id == 52) {
+					window.cmd_clear = value || "";
+				}
+				if (id == 53) {
+					window.cmd_calibrate = value || "";
 				}
 				if (id == 61) {
 					document.getElementById("matrix").value = value || "";
@@ -253,12 +270,12 @@
 			connect();
 		}
 	}, 1000);
-	
+
 	function preview() {
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_camera_calibrater_cmd",
+			"key": "plugin_camera_calibrater_cmd_preview",
 			"value": "preview"
 		};
 		ws.send(JSON.stringify(rpc_data));

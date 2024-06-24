@@ -26,10 +26,10 @@ def get_ip():
         val = "127.0.0.1"
     return val
 def shoot_img():
-    lebai.set_item("plugin_camera_cmd", "shoot")
+    lebai.set_item("plugin_camera_cmd_shoot", "shoot")
     while True:
         time.sleep(0.1)
-        cmd = (lebai.get_item("plugin_camera_cmd"))['value']
+        cmd = (lebai.get_item("plugin_camera_cmd_shoot"))['value']
         if not cmd or cmd == "":
             break
 
