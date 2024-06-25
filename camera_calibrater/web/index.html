@@ -34,22 +34,22 @@
 	<hr>
 	<img src="../../camera/images/camera_calibrater.webp" id="pic">
 	<br>
-	采集至少3张不同位置的图片后再点击“标定”
+	采集至少3张(推荐6张以上)不同位置的图片后再点击“标定”
 	<br>
 	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
 	<br>
-	<button onclick="record()">记录点位</button>
+	<button onclick="record()" id="record">记录点位</button>
 	<button onclick="clear_data()">清除所有点位</button>
 	<button onclick="calibrate()">标定</button>
 	<br>
 	相机内参<br>
-	<textarea id="matrix" rows="3"></textarea>
+	<textarea id="matrix" rows="3" disabled></textarea>
 	<br>
 	相机畸变<br>
-	<textarea id="dist_coeffs" rows="3"></textarea>
+	<textarea id="dist_coeffs" rows="3" disabled></textarea>
 	<br>
 	相机位置<br>
-	<textarea id="data" rows="3"></textarea>
+	<textarea id="data" rows="3" disabled></textarea>
 	<br>
 	<img src="../../camera/images/camera_calibrater.9.webp" id="pic9">
 	<img src="../../camera/images/camera_calibrater.8.webp" id="pic8">
@@ -139,6 +139,11 @@
 		rpc_data.id = 53;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_cmd_calibrate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 60;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_i",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 61;
@@ -250,6 +255,9 @@
 				}
 				if (id == 53) {
 					window.cmd_calibrate = value || "";
+				}
+				if (id == 60) {
+					document.getElementById("record").innerText = "记录点位" + value;
 				}
 				if (id == 61) {
 					document.getElementById("matrix").value = value || "";
