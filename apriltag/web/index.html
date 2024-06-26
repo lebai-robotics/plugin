@@ -10,7 +10,11 @@
 	<h2>使用camera_calibrater插件完成标定后，才能使用本插件</h2>
 	<form>
 		tag_family<br>
-		<input type="text" id="tag_family">
+		<select id="tag_family">
+			<option value="tag16h5">tag16h5</option>
+			<option value="tag25h9">tag25h9</option>
+			<option value="tag36h11" selected>tag36h11</option>
+		</select>
 		<br>
 		tag_size(单位m)<br>
 		<input type="text" id="tag_size">
