@@ -35,6 +35,8 @@ def shoot_img():
 
 def main():
     shoot_img()
+    dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
+    dist_coeffs = json.loads(dist_coeffs)
     camera_matrix = (lebai.get_item("plugin_camera_calibrater_camera_matrix"))['value']
     camera_matrix = json.loads(camera_matrix)
     fx = camera_matrix[0][0]
@@ -51,6 +53,7 @@ def main():
 
     at_detector = apriltag.Detector(families=tag_family)
     img = cv2.imread(os.path.join(images_dir, "img.webp"), cv2.IMREAD_GRAYSCALE)
+    img = cv2.undistort(img, camera_matrix, dist_coeffs)
     #_, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
     if img.size == 0:
         exit(2)
