@@ -16,7 +16,7 @@ def main():
     apriltag_signal = int(apriltag_signal)
 
     while True:
-        time.sleep(1)
+        time.sleep(0.1)
         apriltag_id = lebai.get_signal(apriltag_signal)
         if apriltag_id >= 0:
             lebai.save_pose("apriltag"+str(apriltag_id), None)

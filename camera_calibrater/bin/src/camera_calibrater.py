@@ -84,7 +84,7 @@ def shoot_img():
 
 def main():
     while True:
-        time.sleep(1)
+        time.sleep(0.1)
         cmd = get_cmd()
         if not cmd or cmd == "":
             continue
