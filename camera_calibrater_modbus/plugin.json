@@ -1,0 +1,6 @@
+{
+  "name": "camera_calibrater_modbus",
+  "description": "相机标定",
+  "homepage": "lebai.ltd",
+  "auto_restart": true
+}

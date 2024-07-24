@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>相机标定</title>
+</head>
+
+<body>
+	<form>
+		标签ID<br>
+		<input type="text" id="tag">
+		<br>
+		标签尺寸(单位 毫米mm)<br>
+		<input type="text" id="size">
+		<br>
+	</form>
+	<button onclick="save()">save</button>
+	<button onclick="get()">refresh</button>
+	<br>
+	<hr>
+	<hr>
+	<br>
+	采集至少6个不同位置后再点击“标定”
+	<br>
+	<button onclick="record()" id="record">记录点位</button>
+	<button onclick="clear_data()">清除所有点位</button>
+	<button onclick="calibrate()">标定</button>
+	<br>
+	相机位置<br>
+	<textarea id="data" rows="3" disabled style="width:80%;"></textarea>
+</body>
+
+<script>
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag",
+			"value": document.getElementById("tag").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_size",
+			"value": document.getElementById("size").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 41;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 42;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_size",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 51;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_record",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 52;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_clear",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 53;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_calibrate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 60;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_i",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 63;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_data",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function record() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_record",
+			"value": "record"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function clear_data() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_clear",
+			"value": "clear"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function calibrate() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_calibrate",
+			"value": "calibrate"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function wait_cmd_finish() {
+		get();
+		let timer;
+		timer = setInterval(() => {
+			get();
+			if (window.cmd_record == "" && window.cmd_clear == "" && window.cmd_calibrate == "") {
+				clearInterval(timer);
+				refresh_img();
+			}
+		}, 1000);
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 41) {
+					document.getElementById("tag").value = value || "0";
+				}
+				if (id == 42) {
+					document.getElementById("size").value = value || "120";
+				}
+				if (id == 51) {
+					window.cmd_record = value || "";
+				}
+				if (id == 52) {
+					window.cmd_clear = value || "";
+				}
+				if (id == 53) {
+					window.cmd_calibrate = value || "";
+				}
+				if (id == 60) {
+					document.getElementById("record").innerText = "记录点位" + value;
+				}
+				if (id == 63) {
+					document.getElementById("data").value = value || "";
+				}
+			}
+		}
+	}
+	connect();
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+</script>
+
+</html>
