@@ -57,24 +57,25 @@ def get_pose(i):
         return None
     return {"robot": json.loads(robot_pose), "tag": json.loads(tag_pose)}
 
-def find_tags():
-    lebai.write_single_register("openmv", 300, 1)
-    while lebai.read_holding_registers("openmv", 300, 1)[1]!=0:
+def find_tags(lebai_real):
+    lebai_real.write_single_register("openmv", "306", get_size())
+    lebai_real.write_single_register("openmv", "300", 1)
+    while lebai_real.read_holding_registers("openmv", "300", 1)[0]!=0:
         time.sleep(0.1)
-    num = lebai.read_holding_registers("openmv", 301, 1)[1]
+    num = lebai_real.read_holding_registers("openmv", "301", 1)[0]
     tags = {}
     for i in range(num):
-        tag_data = lebai.read_holding_registers(311+10*i, 7)
-        x = tag_data[2]
+        tag_data = lebai_real.read_holding_registers("openmv", str(311+10*i), 7)
+        x = tag_data[1]
         if x > 32767:
             x = x - 65536
-        y = tag_data[3]
+        y = tag_data[2]
         if y > 32767:
             y = y - 65536
-        z = tag_data[4]
+        z = tag_data[3]
         if z > 32767:
             z = z - 65536
-        tags[str(tag_data[1])] = {"x":x,"y":y,"z":z,"rz":tag_data[5]/65536*2*math.pi,"ry":tag_data[6]/65536*2*math.pi,"rx":tag_data[7]/65536*2*math.pi}
+        tags[str(tag_data[0])] = {"x":x/1000,"y":y/1000,"z":z/1000,"rz":tag_data[4]/65536*2*math.pi,"ry":tag_data[5]/65536*2*math.pi,"rx":tag_data[6]/65536*2*math.pi}
     return tags
 
 def main():
@@ -84,15 +85,18 @@ def main():
         if not cmd or cmd == "":
             continue
         if cmd == "record":
+            lebai_real = lebai_sdk.connect("127.0.0.1", False)
             tag_id = get_tag()
-            tags = find_tags()
-            if not tags.has_key(tag_id):
+            tags = find_tags(lebai_real)
+            if tag_id not in tags:
+                print(tags)
+                lebai.set_item("plugin_camera_calibrater_cmd_record", "")
                 continue
 
             i = get_i()+1
             lebai.set_item("plugin_camera_calibrater_i", str(i))
             lebai.set_item("plugin_camera_calibrater_pose_tag_{}".format(i), json.dumps(tags[tag_id]))
-            pose = (lebai.get_kin_data())["actual_flange_pose"]
+            pose = (lebai_real.get_kin_data())["actual_flange_pose"]
             lebai.set_item("plugin_camera_calibrater_pose_{}".format(i), json.dumps(pose))
 
         if cmd == "clear":
