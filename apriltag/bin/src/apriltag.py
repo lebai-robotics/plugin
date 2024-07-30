@@ -6,6 +6,7 @@ import os
 import shutil
 from contextlib import suppress
 import cv2
+import numpy as np
 import json
 import time
 import lebai_sdk
@@ -53,7 +54,7 @@ def main():
 
     at_detector = apriltag.Detector(families=tag_family)
     img = cv2.imread(os.path.join(images_dir, "img.webp"), cv2.IMREAD_GRAYSCALE)
-    img = cv2.undistort(img, camera_matrix, dist_coeffs)
+    img = cv2.undistort(img, np.array(camera_matrix), np.array(dist_coeffs))
     #_, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
     if img.size == 0:
         exit(2)
