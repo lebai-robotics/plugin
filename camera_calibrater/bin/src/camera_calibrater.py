@@ -90,7 +90,7 @@ def main():
             continue
         if cmd == "preview":
             shoot_img()
-            img = cv2.imread(os.path.join(images_dir, "img.webp"))
+            img = cv2.imread(os.path.join(images_dir, "img.jpg"))
             if img.size == 0:
                 lebai.set_item("plugin_camera_calibrater_cmd_preview", "")
                 continue
@@ -106,7 +106,7 @@ def main():
             lebai_real = lebai_sdk.connect(get_ip(), False)
             i = get_i()+1
             lebai.set_item("plugin_camera_calibrater_i", str(i))
-            shutil.copy(os.path.join(images_dir, "img.webp"), os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
+            shutil.copy(os.path.join(images_dir, "img.jpg"), os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
             pose = (lebai_real.get_kin_data())["actual_flange_pose"]
             lebai.set_item("plugin_camera_calibrater_pose_{}".format(i), json.dumps(pose))
         if cmd == "clear":

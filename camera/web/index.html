@@ -21,7 +21,7 @@
 	<button onclick="save()">save</button>
 	<button onclick="get()">refresh</button>
 	<br>
-	<img src="../images/img.webp" id="pic">
+	<img src="../images/img.jpg" id="pic">
 </body>
 
 <script>
@@ -114,7 +114,7 @@
 			"value": "shoot"
 		};
 		ws.send(JSON.stringify(rpc_data));
-		document.getElementById("pic").src = "../images/img.webp?" + Date.now();
+		document.getElementById("pic").src = "../images/img.jpg?" + Date.now();
 	}
 	setInterval(() => {
 		shoot();
