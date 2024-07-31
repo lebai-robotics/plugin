@@ -33,8 +33,7 @@ def shoot_img():
         cmd = (lebai.get_item("plugin_camera_cmd_shoot"))['value']
         if not cmd or cmd == "":
             break
-
-def main():
+def find_tags():
     shoot_img()
     dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
     dist_coeffs = json.loads(dist_coeffs)
@@ -61,42 +60,54 @@ def main():
     tags = at_detector.detect(img, estimate_tag_pose=True, camera_params=(fx, fy, cx, cy), tag_size=tag_size)
 
     ret = {}
-    lebai_real = lebai_sdk.connect(get_ip(), False)
-    flange_pose = (lebai_real.get_kin_data())["actual_flange_pose"]
-    cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])
-    cam = lebai_real.pose_trans(flange_pose, cam2flange)
     for tag in tags:
         pos = tag.pose_t
         rot = rotation.rotationMatrixToEulerZyx(tag.pose_R)
         offset = {"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]}
         if (offset["x"]**2+offset["y"]**2+offset["z"]**2)**0.5 > 0.8:
             continue
-        tag_pos_offset = {"x":offset["x"], "y":offset["y"], "z":offset["z"], "rz":0, "ry":0, "rx":0}
-        tag_rot_offset = {"x":0,"y": 0,"z": 0, "rz":offset["rz"], "ry":offset["ry"], "rx":offset["rx"]}
-        tag_pose = lebai_real.pose_trans(cam, tag_pos_offset)
-        tag_pose = lebai_real.pose_trans(tag_pose, tag_rot_offset)
-        ret[tag.tag_id] = tag_pose
+        ret[str(tag.tag_id)] = offset
         for corner in tag.corners:
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
             cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 1)
         cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
-    cv2.imwrite(os.path.join(images_dir, "apriltag.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
+    cv2.imwrite(os.path.join(images_dir, "apriltag.tmp.jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 50])
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.5.webp"), os.path.join(images_dir, "apriltag.6.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.5.jpg"), os.path.join(images_dir, "apriltag.6.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.4.webp"), os.path.join(images_dir, "apriltag.5.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.4.jpg"), os.path.join(images_dir, "apriltag.5.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.3.webp"), os.path.join(images_dir, "apriltag.4.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.3.jpg"), os.path.join(images_dir, "apriltag.4.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.2.webp"), os.path.join(images_dir, "apriltag.3.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.2.jpg"), os.path.join(images_dir, "apriltag.3.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.1.webp"), os.path.join(images_dir, "apriltag.2.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.1.jpg"), os.path.join(images_dir, "apriltag.2.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.webp"), os.path.join(images_dir, "apriltag.1.webp"))
+        shutil.move(os.path.join(images_dir, "apriltag.jpg"), os.path.join(images_dir, "apriltag.1.jpg"))
     with suppress(FileNotFoundError):
-        shutil.move(os.path.join(images_dir, "apriltag.tmp.webp"), os.path.join(images_dir, "apriltag.webp"))
-    print(json.dumps(ret))
+        shutil.move(os.path.join(images_dir, "apriltag.tmp.jpg"), os.path.join(images_dir, "apriltag.jpg"))
+    return ret
+
+def find_tags_pose(flange_pose):
+    tags = find_tags()
+    ret = {}
+    cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])
+    cam = lebai.pose_trans(flange_pose, cam2flange)
+    for tag_id, tag in tags.items():
+        offset = tag
+        tag_pos_offset = {"x":offset["x"], "y":offset["y"], "z":offset["z"], "rz":0, "ry":0, "rx":0}
+        tag_rot_offset = {"x":0,"y": 0,"z": 0, "rz":offset["rz"], "ry":offset["ry"], "rx":offset["rx"]}
+        tag_pose = lebai.pose_trans(cam, tag_pos_offset)
+        tag_pose = lebai.pose_trans(tag_pose, tag_rot_offset)
+        ret[str(tag_id)] = tag_pose
+    return ret
+
+def main():
+    lebai_real = lebai_sdk.connect(get_ip(), False)
+    flange_pose = (lebai_real.get_kin_data())["actual_flange_pose"]
+    ret = find_tags_pose(flange_pose)
     return ret
 
 if __name__ == '__main__':
-    main()
+    ret = main()
+    print(json.dumps(ret))
