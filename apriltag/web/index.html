@@ -19,8 +19,18 @@
 		tag_size(单位m)<br>
 		<input type="text" id="tag_size">
 		<br>
+		<hr>
+		使用信号量读取标签位置<br>
 		signal<br>
 		<input type="text" id="signal">
+		<br>
+		<hr>
+		使用Modbus读取标签位置<br>
+		modbus_address<br>
+		<input type="text" id="modbus_address">
+		<br>
+		modbus_salve_id<br>
+		<input type="text" id="modbus_id">
 		<br>
 	</form>
 	<button onclick="save()">save</button>
@@ -64,6 +74,16 @@
 			"value": document.getElementById("signal").value
 		};
 		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_modbus_address",
+			"value": document.getElementById("modbus_address").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_id",
+			"value": document.getElementById("modbus_id").value
+		};
+		ws.send(JSON.stringify(rpc_data));
 	}
 	function get() {
 		rpc_data.method = "get_item";
@@ -80,6 +100,16 @@
 		rpc_data.id = 51;
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_signal",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 55;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_modbus_address",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 56;
+		rpc_data.params[0] = {
+			"key": "plugin_apriltag_modbus_id",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -109,6 +139,12 @@
 				}
 				if (id == 51) {
 					document.getElementById("signal").value = value || "13";
+				}
+				if (id == 55) {
+					document.getElementById("modbus_address").value = value || "";
+				}
+				if (id == 56) {
+					document.getElementById("modbus_id").value = value || "7";
 				}
 			}
 		}
