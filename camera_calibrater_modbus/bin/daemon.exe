@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cd "$(dirname "$0")"
-#./`uname -m`/camera_calibrater
-lpy ./src/camera_calibrater.py
