@@ -103,6 +103,15 @@ def main():
             shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
         if cmd == "record":
             shoot_img()
+            img = cv2.imread(os.path.join(images_dir, "img.jpg"))
+            if img.size == 0:
+                lebai.set_item("plugin_camera_calibrater_cmd_record", "")
+                continue
+            else:
+                ret, corners = cv2.findChessboardCorners(img, (row, col), None)
+                if not ret or len(corners) != row * col:
+                    lebai.set_item("plugin_camera_calibrater_cmd_record", "")
+                    continue
             lebai_real = lebai_sdk.connect(get_ip(), False)
             i = get_i()+1
             lebai.set_item("plugin_camera_calibrater_i", str(i))

@@ -34,7 +34,7 @@
 	<hr>
 	<img src="../../camera/images/camera_calibrater.webp" id="pic">
 	<br>
-	采集至少6张不同位置的图片后再点击“标定”
+	采集至少9张不同位置的图片后再点击“标定”
 	<br>
 	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
 	<br>
@@ -173,6 +173,10 @@
 		wait_cmd_finish();
 	}
 	function clear_data() {
+		let yes = confirm('确认要清除所有位点吗？');
+		if (!yes) {
+			return;
+		}
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
