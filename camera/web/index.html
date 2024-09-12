@@ -9,7 +9,7 @@
 <body>
 	<form>
 		index(深度摄像头填 -1)<br>
-		<input type="number" id="index">
+		<select id="index"></select>
 		<br>
 		width<br>
 		<input type="number" id="width">
@@ -58,6 +58,11 @@
 	}
 	function get() {
 		rpc_data.method = "get_item";
+		rpc_data.id = 20;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_indexs",
+		};
+		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 21;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_index",
@@ -91,6 +96,15 @@
 				var value = msg.result.value;
 				if (value === undefined) {
 					return;
+				}
+				if (id == 20) {
+					let options = [];
+					let indexs = JSON.parse(value);
+					for (const i in indexs) {
+						let selected = indexs[i] == document.getElementById("index").value ? "selected" : "";
+						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
+					}
+					document.getElementById("index").innerHTML = options;
 				}
 				if (id == 21) {
 					document.getElementById("index").value = value || "-1";

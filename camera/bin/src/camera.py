@@ -4,6 +4,7 @@ import os
 import shutil
 import cv2
 import time
+import json
 import lebai_sdk
 import utils.camera as camera
 
@@ -21,6 +22,24 @@ def get_cmd():
         return "shoot"
 
     return ""
+
+def search_camera():
+    width = (lebai.get_item("plugin_camera_width"))['value']
+    if not width:
+        width = "1280"
+    width = int(width)
+    height = (lebai.get_item("plugin_camera_height"))['value']
+    if not height:
+        height = "720"
+    height = int(height)
+
+    camera_list = []
+    for i in range(-1,10):
+        cap = camera.Camera(i, width, height)
+        if cap.isOpened():
+            camera_list.append(i)
+        cap.release()
+    lebai.set_item("plugin_camera_indexs", json.dumps(camera_list))
 
 def init_camera():
     index = (lebai.get_item("plugin_camera_index"))['value']
@@ -40,6 +59,7 @@ def init_camera():
     return cap
 
 def main():
+    search_camera()
     cap = init_camera()
     if not cap.isOpened():
         exit(1)

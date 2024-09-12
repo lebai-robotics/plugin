@@ -60,6 +60,8 @@ class Camera(object):
         return img_color
 
     def release(self):
+        if not self.isOpened():
+            return
         if self.kind == "cv":
             self.camera.release()
         if self.kind == "rs":
