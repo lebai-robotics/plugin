@@ -88,13 +88,13 @@ def main():
         cmd = get_cmd()
         if not cmd or cmd == "":
             continue
+        row, col, width = get_row_col_width()
         if cmd == "preview":
             shoot_img()
             img = cv2.imread(os.path.join(images_dir, "img.jpg"))
             if img.size == 0:
                 lebai.set_item("plugin_camera_calibrater_cmd_preview", "")
                 continue
-            row, col, width = get_row_col_width()
             ret, corners = cv2.findChessboardCorners(img, (row, col), None)
             if ret:
                 if len(corners) == row * col:

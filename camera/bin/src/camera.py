@@ -36,7 +36,7 @@ def search_camera():
     camera_list = []
     for i in range(-1,10):
         cap = camera.Camera(i, width, height)
-        if cap.isOpened():
+        if cap.isOpened() and (cap.getImage() is not None):
             camera_list.append(i)
         cap.release()
     lebai.set_item("plugin_camera_indexs", json.dumps(camera_list))
@@ -59,9 +59,9 @@ def init_camera():
     return cap
 
 def main():
-    search_camera()
     cap = init_camera()
     if not cap.isOpened():
+        search_camera()
         exit(1)
 
     images_dir = os.path.join(current_dir, "../../images")
