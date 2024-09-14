@@ -18,10 +18,10 @@
 		<input type="number" id="height">
 		<br>
 	</form>
-	<button onclick="save()">save</button>
-	<button onclick="get()">refresh</button>
+	<button onclick="save()">保存参数</button>
+	<button onclick="get()">刷新参数</button>
 	<br>
-	<img src="../images/img.jpg" id="pic">
+	<img src="" id="pic">
 </body>
 
 <script>
@@ -104,7 +104,11 @@
 						let selected = indexs[i] == document.getElementById("index").value ? "selected" : "";
 						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
 					}
-					document.getElementById("index").innerHTML = options;
+					if (options.length == 0) {
+						document.getElementById("index").outerHTML = `<input type="number" id="index">`;
+					} else {
+						document.getElementById("index").innerHTML = options;
+					}
 				}
 				if (id == 21) {
 					document.getElementById("index").value = value || "-1";
