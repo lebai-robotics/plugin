@@ -17,6 +17,13 @@
 		height<br>
 		<input type="number" id="height">
 		<br>
+		翻转<br>
+		<select id="flip">
+			<option value="-2" selected>不翻转</option>
+			<option value="0">垂直翻转</option>
+			<option value="1">水平翻转</option>
+			<option value="-1">翻转180°</option>
+		</select>
 	</form>
 	<button onclick="save()">保存参数</button>
 	<button onclick="get()">刷新参数</button>
@@ -47,6 +54,11 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
 			"key": "plugin_camera_height",
+			"value": document.getElementById("flip").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_flip",
 			"value": document.getElementById("height").value
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -76,6 +88,11 @@
 		rpc_data.id = 23;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_height",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 24;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_flip",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -118,6 +135,9 @@
 				}
 				if (id == 23) {
 					document.getElementById("height").value = value || "720";
+				}
+				if (id == 24) {
+					document.getElementById("flip").value = value || "-2";
 				}
 			}
 		}
