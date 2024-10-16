@@ -1,0 +1,6 @@
+{
+  "name": "io_stop",
+  "description": "IO控制急停",
+  "homepage": "lebai.ltd",
+  "auto_restart": true
+}

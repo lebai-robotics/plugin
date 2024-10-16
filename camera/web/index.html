@@ -54,12 +54,12 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
 			"key": "plugin_camera_height",
-			"value": document.getElementById("flip").value
+			"value": document.getElementById("height").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
 			"key": "plugin_camera_flip",
-			"value": document.getElementById("height").value
+			"value": document.getElementById("flip").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
