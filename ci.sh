@@ -20,7 +20,12 @@ do
     fi
 
     cd $dir
-    zip -q -r ../.oss/$dir.zip *
+    if [ -s list.sh ]; then
+        PLUGIN_CI_LIST=`bash list.sh`
+    else
+        PLUGIN_CI_LIST=`git ls-files`
+    fi
+    zip -q -r ../.oss/$dir.zip $PLUGIN_CI_LIST
     obj="{\"name\":\"$dir\", \"url\":\"https://l-os.lebai.ltd/plugin/${dir}.zip\"}"
     arr+=("$obj")
     cd ../

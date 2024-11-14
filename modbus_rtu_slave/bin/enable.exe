@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+chmod 755 ./`uname -m`/modbus_rtu_slave

@@ -1,0 +1,6 @@
+{
+  "name": "modbus_rtu_slave",
+  "description": "modbus_rtu_slave",
+  "homepage": "lebai.ltd",
+  "auto_restart": true
+}

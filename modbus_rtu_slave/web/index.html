@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>modbus配置</title>
+</head>
+
+<body>
+	<form>
+		串口号<br>
+		<select id="serial"></select>
+		<br>
+		波特率<br>
+		<input type="text" id="baud_rate">
+		<br>
+		从站ID<br>
+		<input type="text" id="salve_id">
+		<br>
+		超时时间（ms）<br>
+		<input type="text" id="timeout">
+		<br>
+	</form>
+	<button onclick="save()">保存参数</button>
+	<button onclick="get()">刷新参数</button>
+	<br>
+</body>
+
+<script>
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_serial",
+			"value": document.getElementById("serial").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_baud_rate",
+			"value": document.getElementById("baud_rate").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_salve_id",
+			"value": document.getElementById("salve_id").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_timeout",
+			"value": document.getElementById("timeout").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 40;
+		rpc_data.params[0] = {
+			"key": "plugin_serial_devices",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 41;
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_serial",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 42;
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_baud_rate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 51;
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_salve_id",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 55;
+		rpc_data.params[0] = {
+			"key": "plugin_modbus_rtu_slave_timeout",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 40) {
+					let options = [];
+					let indexs = JSON.parse(value);
+					for (const i in indexs) {
+						let selected = indexs[i] == document.getElementById("serial").value ? "selected" : "";
+						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
+					}
+					if (options.length == 0) {
+						document.getElementById("serial").outerHTML = `<input type="number" id="serial">`;
+					} else {
+						document.getElementById("serial").innerHTML = options;
+					}
+				}
+				if (id == 41) {
+					document.getElementById("serial").value = value || "0";
+				}
+				if (id == 42) {
+					document.getElementById("baud_rate").value = value || "115200";
+				}
+				if (id == 51) {
+					document.getElementById("salve_id").value = value || "30";
+				}
+				if (id == 55) {
+					document.getElementById("timeout").value = value || "800";
+				}
+			}
+		}
+	}
+	connect();
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+</script>
+
+</html>
