@@ -1,18 +1,44 @@
 name: Publish
 on: [push, pull_request]
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   publish:
     name: publish
     runs-on: ubuntu-latest
+    container: registry.cn-shanghai.aliyuncs.com/lebai/util:14.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
       - name: Install ali ossutil
-        uses: yizhoumo/setup-ossutil@v2
+        uses: manyuanrong/setup-ossutil@v3.0
         with:
           endpoint: ${{ secrets.AWS_ENDPOINT }}
           access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           access-key-secret: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: install rust targets
+        run: |
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+      - uses: Swatinem/rust-cache@v2
+        continue-on-error: true
+      - name: Install Cross Compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
+          sudo apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu libc6-dev-arm64-cross
       - name: Publish
         env:
           AWS_ENDPOINT: ${{ secrets.AWS_ENDPOINT }}
