@@ -1,4 +1,5 @@
 use std::future::{self, Future};
+use std::net::SocketAddrV4;
 use std::pin::Pin;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -18,7 +19,7 @@ impl tokio_modbus::server::Service for Service {
 
     fn call(&self, req: Self::Request) -> Self::Future {
         let SlaveRequest { slave, request } = req;
-        if slave != self.slave.into() {
+        if slave != self.slave.0 {
             return Box::pin(future::ready(Ok(None)));
         }
 
@@ -93,10 +94,7 @@ impl tokio_modbus::server::Service for Service {
                 let fut = async move {
                     let mut ctx = ctx.lock().await;
                     ctx.write_multiple_registers(addr, &datas).await.unwrap()?;
-                    Ok(Some(Response::WriteMultipleRegisters(
-                        addr,
-                        datas.len() as u16,
-                    )))
+                    Ok(Some(Response::WriteMultipleRegisters(addr, datas.len() as u16)))
                 };
                 Box::pin(fut)
             }
@@ -114,19 +112,12 @@ impl tokio_modbus::server::Service for Service {
                 let ctx = self.ctx.clone();
                 let fut = async move {
                     let mut ctx = ctx.lock().await;
-                    let rsp = ctx
-                        .read_write_multiple_registers(rr, cnt, wr, &datas)
-                        .await
-                        .unwrap()?;
+                    let rsp = ctx.read_write_multiple_registers(rr, cnt, wr, &datas).await.unwrap()?;
                     Ok(Some(Response::ReadWriteMultipleRegisters(rsp)))
                 };
                 Box::pin(fut)
             }
-            Request::ReportServerId => Box::pin(future::ready(Ok(Some(Response::ReportServerId(
-                self.slave.into(),
-                true,
-                Vec::new(),
-            ))))),
+            Request::ReportServerId => Box::pin(future::ready(Ok(Some(Response::ReportServerId(self.slave.into(), true, Vec::new()))))),
             Request::Custom(code, bytes) => {
                 println!("unknown mb({}): {:02X?}", code, bytes);
                 Box::pin(future::ready(Err(ExceptionCode::IllegalFunction)))
@@ -137,16 +128,26 @@ impl tokio_modbus::server::Service for Service {
 
 #[tokio::main]
 async fn main() {
-    let socket_addr = "127.0.0.1:3051".parse().unwrap();
-    let client = tcp::connect(socket_addr).await.unwrap();
+    let lebai = lebai_sdk::connect("127.0.0.1".into(), true).await.unwrap();
+    let mb_serial = lebai.get_item("plugin_modbus_rtu_slave_serial".into()).await.unwrap().value;
+    let mb_baud_rate = lebai.get_item("plugin_modbus_rtu_slave_baud_rate".into()).await.unwrap().value;
+    let mb_slave_id = lebai.get_item("plugin_modbus_rtu_slave_salve_id".into()).await.unwrap().value;
+    let mb_simu = lebai.get_item("plugin_modbus_rtu_slave_simu".into()).await.unwrap().value;
 
-    let slave = Slave(12);
+    let socket_addr = if mb_simu == "true" {
+        SocketAddrV4::new([127,0,0,1].into(), 3050)
+    } else {
+        SocketAddrV4::new([127,0,0,1].into(), 3051)
+    };
+    let client = tcp::connect(socket_addr.into()).await.unwrap();
+    let slave = Slave(mb_slave_id.parse().unwrap_or(30));
     let service = Service {
         slave,
         ctx: Arc::new(Mutex::new(client)),
     };
 
-    let server_builder = tokio_serial::new("/dev/pts/6", 19200);
+    let serial = format!("/dev/ttyS{}",if mb_serial.is_empty(){"1"}else{&mb_serial});
+    let server_builder = tokio_serial::new(serial, mb_baud_rate.parse().unwrap_or(115200));
     let server_serial = tokio_serial::SerialStream::open(&server_builder).unwrap();
     let server = Server::new(server_serial);
 

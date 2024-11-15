@@ -17,8 +17,11 @@
 		从站ID<br>
 		<input type="text" id="salve_id">
 		<br>
-		超时时间（ms）<br>
-		<input type="text" id="timeout">
+		手臂环境<br>
+		<select id="simu">
+			<option value="false" selected>真机环境</option>
+			<option value="true">仿真环境</option>
+		</select>
 		<br>
 	</form>
 	<button onclick="save()">保存参数</button>
@@ -53,18 +56,26 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_timeout",
-			"value": document.getElementById("timeout").value
+			"key": "plugin_modbus_rtu_slave_simu",
+			"value": document.getElementById("simu").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+
+		rpc_data.method = "restart_plugin_daemon";
+		rpc_data.params[0] = {
+			"name": "modbus_rtu_slave",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
 	function get() {
-		rpc_data.method = "get_item";
+		rpc_data.method = "get_box_devices";
 		rpc_data.id = 40;
 		rpc_data.params[0] = {
-			"key": "plugin_serial_devices",
+			"prefix": "ttyS",
 		};
 		ws.send(JSON.stringify(rpc_data));
+
+		rpc_data.method = "get_item";
 		rpc_data.id = 41;
 		rpc_data.params[0] = {
 			"key": "plugin_modbus_rtu_slave_serial",
@@ -80,9 +91,9 @@
 			"key": "plugin_modbus_rtu_slave_salve_id",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 55;
+		rpc_data.id = 61;
 		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_timeout",
+			"key": "plugin_modbus_rtu_slave_simu",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -100,13 +111,9 @@
 				console.log(msg.error);
 			} else {
 				var id = msg.id;
-				var value = msg.result.value;
-				if (value === undefined) {
-					return;
-				}
 				if (id == 40) {
 					let options = [];
-					let indexs = JSON.parse(value);
+					let indexs = msg.result.devices;
 					for (const i in indexs) {
 						let selected = indexs[i] == document.getElementById("serial").value ? "selected" : "";
 						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
@@ -117,8 +124,13 @@
 						document.getElementById("serial").innerHTML = options;
 					}
 				}
+
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
 				if (id == 41) {
-					document.getElementById("serial").value = value || "0";
+					document.getElementById("serial").value = value || "1";
 				}
 				if (id == 42) {
 					document.getElementById("baud_rate").value = value || "115200";
@@ -126,8 +138,8 @@
 				if (id == 51) {
 					document.getElementById("salve_id").value = value || "30";
 				}
-				if (id == 55) {
-					document.getElementById("timeout").value = value || "800";
+				if (id == 61) {
+					document.getElementById("simu").value = value || "false";
 				}
 			}
 		}
