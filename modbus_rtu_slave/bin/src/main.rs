@@ -148,9 +148,9 @@ async fn main() {
 
     let serial = format!("/dev/ttyS{}",if mb_serial.is_empty(){"1"}else{&mb_serial});
     let server_builder = tokio_serial::new(serial, mb_baud_rate.parse().unwrap_or(115200));
-    let server_serial = tokio_serial::SerialStream::open(&server_builder).unwrap();
+    let mut server_serial = tokio_serial::SerialStream::open(&server_builder).unwrap();
     #[cfg(unix)]
-    server_serial.set_exclusive(true)?;
+    server_serial.set_exclusive(true).unwrap();
     let server = Server::new(server_serial);
 
     if let Err(err) = server.serve_forever(service).await {

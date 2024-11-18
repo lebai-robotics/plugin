@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 cd "$(dirname "$0")"
 
 PLUGIN_CI_LIST=`git ls-files`
