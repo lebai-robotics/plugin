@@ -9,7 +9,7 @@
 <body>
 	<form>
 		串口号<br>
-		<select id="serial"></select>
+		<input type="number" id="serial">
 		<br>
 		波特率<br>
 		<input type="text" id="baud_rate">
@@ -121,6 +121,7 @@
 					if (options.length == 0) {
 						document.getElementById("serial").outerHTML = `<input type="number" id="serial">`;
 					} else {
+						document.getElementById("serial").outerHTML = `<select id="serial"></select>`;
 						document.getElementById("serial").innerHTML = options;
 					}
 				}
