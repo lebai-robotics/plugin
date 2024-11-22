@@ -9,7 +9,7 @@
 <body>
 	<form>
 		index(深度摄像头填 -1)<br>
-		<select id="index"></select>
+		<input type="number" id="index">
 		<br>
 		width<br>
 		<input type="number" id="width">
@@ -124,6 +124,7 @@
 					if (options.length == 0) {
 						document.getElementById("index").outerHTML = `<input type="number" id="index">`;
 					} else {
+						document.getElementById("index").outerHTML = `<select id="index"></select>`;
 						document.getElementById("index").innerHTML = options;
 					}
 				}
