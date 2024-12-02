@@ -123,6 +123,10 @@ def main():
             clear_imgs()
             lebai.set_item("plugin_camera_calibrater_i", str(0))
         if cmd == "calibrate":
+            if get_i() < 9:
+                print("image not enough")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
+                continue
             # 标定
             cp_int = np.zeros((row * col, 3), np.float32)
             cp_int[:, :2] = np.mgrid[0:row, 0:col].T.reshape(-1, 2)
@@ -149,11 +153,32 @@ def main():
                 obj_points.append(cp_world)
                 image_points.append(corners)
             # 进行相机标定
-            image_points_len = len(image_points)
-            if image_points_len < 3:
-                print("image not enough")
+            ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
+            if not ret:
+                print("failed to calibrateCamera")
                 lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
+            # 计算投影误差
+            mean_error = 0
+            error_points = []  # 坐标误差
+            for i in range(len(obj_points)):
+                imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coeffs)
+                error = cv2.norm(image_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+                error_points.append(error)
+                mean_error += error
+            mean_error = mean_error / len(obj_points)
+
+            bad_points = []  #异常坐标
+            for i in range(len(obj_points)):
+                if error_points[i] > max(mean_error, 0.1) * 1.5:
+                    print("remove bad images:", error_points[i])
+                    bad_points.append(i)
+            for i in bad_points[::-1]:
+                R_end2base.pop(i)
+                T_end2base.pop(i)
+                obj_points.pop(i)
+                image_points.pop(i)
+
             ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
             if not ret:
                 print("failed to calibrateCamera")
