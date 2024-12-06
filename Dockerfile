@@ -2,7 +2,8 @@ FROM registry.cn-shanghai.aliyuncs.com/lebai/util:14.04
 
 WORKDIR /app
 COPY . .
-COPY ./.git ./
+
+RUN ls -la
 
 ARG AWS_ENDPOINT
 ARG AWS_ACCESS_KEY_ID
