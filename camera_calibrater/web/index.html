@@ -34,6 +34,12 @@
 	<hr>
 	<img src="" id="pic">
 	<br>
+	<br>
+	<button onclick="start_teach_mode()">启动示教模式</button>
+	<button onclick="end_teach_mode()">退出示教模式</button>
+	<button onclick="open_claw()">开夹爪</button>
+	<br>
+	<br>
 	采集15~30张不同位置的图片后再点击“标定”
 	<br>
 	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
@@ -162,6 +168,38 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
+
+	async function call_arm(method, params) {
+		let ip = document.getElementById("ip").value;
+		let data = {
+			"jsonrpc": "2.0",
+			"method": method,
+			"params": [params],
+			"id": 2
+		};
+		return await fetch(`http://${ip}:3021/`, {
+			method: "POST",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data),
+		});
+	}
+	async function start_teach_mode() {
+		await call_arm("start_teach_mode", {});
+	}
+	async function end_teach_mode() {
+		await call_arm("end_teach_mode", {});
+	}
+	async function open_claw() {
+		await call_arm("init_claw", { force: false, });
+		await call_arm("set_claw", {
+			force: 0,
+			amplitude: 100,
+		});
+	}
+
 	function record() {
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
