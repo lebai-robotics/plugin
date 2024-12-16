@@ -8,3 +8,9 @@ lebai_sdk = {version = "0.2", default-features = false}
 tokio = {version = "1", default-features = false, features = ["macros", "rt-multi-thread", "sync"]}
 tokio-modbus = {version = "0.15", default-features = false, features = ["tcp", "rtu-server"]}
 tokio-serial = {version = "5", default-features = false}
+
+[profile.dev]
+lto = "thin"
+
+[profile.release]
+lto = "thin"
