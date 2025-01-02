@@ -11,12 +11,11 @@ jobs:
         with:
           submodules: true
       - name: Publish
-        uses: docker/build-push-action@v6
+        uses: mosteo-actions/docker-run@v2
         with:
-          context: .
-          push: false
-          tags: lebai/plugin:latest
-          build-args: |
-            AWS_ENDPOINT=${{ secrets.AWS_ENDPOINT }}
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          image: registry.cn-shanghai.aliyuncs.com/lebai/util:14.04
+          host-dir: "."
+          guest-dir: /app
+          params: "-e AWS_ENDPOINT=${{ secrets.AWS_ENDPOINT }} -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          command: |
+            bash ./ci.sh
