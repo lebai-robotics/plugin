@@ -26,6 +26,11 @@ def get_ip():
     if not val:
         val = "127.0.0.1"
     return val
+def get_type():
+    tp = (lebai.get_item("plugin_camera_calibrater_type"))['value']
+    if not tp:
+        tp = "inHand"
+    return tp
 def shoot_img():
     lebai.set_item("plugin_camera_cmd_shoot", "shoot")
     while True:
@@ -89,6 +94,9 @@ def find_tags():
     return ret
 
 def find_tags_pose(flange_pose):
+    tp = get_type()
+    if tp == "toHand":
+        flange_pose = {"x": 0, "y": 0, "z": 0, "rx": 0, "ry": 0, "rz": 0}
     tags = find_tags()
     ret = {}
     cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])

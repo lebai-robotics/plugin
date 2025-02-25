@@ -133,8 +133,7 @@ def main():
             cp_world = cp_int * width
             obj_points = []  # 存储物理坐标
             image_points = []  # 存储角点像素坐标
-            R_end2base = [] # 法兰相对于基座的姿态
-            T_end2base = [] # 法兰相对于基座的位置
+            end2base = [] # 法兰相对于基座的位姿
             R_chess2cam = [] # 棋盘相对于摄像头的姿态
             T_chess2cam = [] # 棋盘相对于摄像头的位置
             for i in range(1, get_i()+1):
@@ -148,8 +147,7 @@ def main():
                 p = get_pose(i)
                 if not p:
                     continue
-                R_end2base.append(rotation.eulerZyzToRotationMatrix([p["rz"], p["ry"], p["rx"]]))
-                T_end2base.append(np.array([p["x"], p["y"], p["z"]]))
+                end2base.append(p)
                 obj_points.append(cp_world)
                 image_points.append(corners)
             # 进行相机标定
@@ -174,8 +172,7 @@ def main():
                     print("remove bad images:", error_points[i])
                     bad_points.append(i)
             for i in bad_points[::-1]:
-                R_end2base.pop(i)
-                T_end2base.pop(i)
+                end2base.pop(i)
                 obj_points.pop(i)
                 image_points.pop(i)
 
@@ -194,6 +191,26 @@ def main():
                 T_chess2cam.append(RT[:3, 3].reshape((3, 1)))
             tp = get_type()
             if tp == "inHand":
+                # end2base * cam2end * chess2cam = chess2base
+                R_end2base = []
+                T_end2base = []
+                for i in range(len(end2base)):
+                    p = end2base[i]
+                    R_end2base.append(rotation.eulerZyzToRotationMatrix([p["rz"], p["ry"], p["rx"]]))
+                    T_end2base.append(np.array([p["x"], p["y"], p["z"]]))
+                R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
+                r = rotation.rotationMatrixToEulerZyx(R)
+                data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
+                lebai.set_item("plugin_camera_calibrater_data", json.dumps(data))
+            if tp == "toHand":
+                # end2base⁻¹ * cam2base * chess2cam = chess2end
+                R_end2base = []
+                T_end2base = []
+                for i in range(len(end2base)):
+                    p = end2base[i]
+                    p = lebai.pose_inverse(p)
+                    R_end2base.append(rotation.eulerZyzToRotationMatrix([p["rz"], p["ry"], p["rx"]]))
+                    T_end2base.append(np.array([p["x"], p["y"], p["z"]]))
                 R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
                 r = rotation.rotationMatrixToEulerZyx(R)
                 data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
