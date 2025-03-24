@@ -8,7 +8,7 @@
 
 <body>
 	<h2>使用camera_calibrater插件完成标定后，才能使用本插件</h2>
-	<form>
+	<div>
 		tag_family<br>
 		<select id="tag_family">
 			<option value="tag16h5">tag16h5</option>
@@ -20,23 +20,29 @@
 		<input type="text" id="tag_size">
 		<br>
 		<hr>
-		使用信号量读取标签位置<br>
-		signal<br>
-		<input type="text" id="signal">
-		<br>
+		<button onclick="switchTab('signal')">使用信号量读取标签位置</button>
+		<button onclick="switchTab('modbus')">使用Modbus读取标签位置</button>
+		<br/>
+		<div id="tab_signal">
+			使用信号量读取标签位置<br>
+			signal<br>
+			<input type="text" id="signal">
+			<br>
+		</div>
+		<div id="tab_modbus" style="display: none;">
+			使用Modbus读取标签位置<br>
+			modbus_address<br>
+			<input type="text" id="modbus_address">
+			<br>
+			modbus_salve_id<br>
+			<input type="text" id="modbus_id">
+			<br>
+		</div>
 		<hr>
-		使用Modbus读取标签位置<br>
-		modbus_address<br>
-		<input type="text" id="modbus_address">
-		<br>
-		modbus_salve_id<br>
-		<input type="text" id="modbus_id">
-		<br>
-	</form>
+	</div>
 	<button onclick="save()">保存参数</button>
 	<button onclick="get()">刷新参数</button>
 	<br>
-	<hr>
 	<hr>
 	<br>
 	<button onclick="find_tag()">识别</button>
@@ -47,6 +53,15 @@
 </body>
 
 <script>
+	function switchTab(tab) {
+		if (tab == "modbus") {
+			document.getElementById("tab_signal").style.display = "none";
+			document.getElementById("tab_modbus").style.display = "inline";
+		} else {
+			document.getElementById("tab_signal").style.display = "inline";
+			document.getElementById("tab_modbus").style.display = "none";
+		}
+	}
 	var ws;
 	var rpc_data = {
 		"jsonrpc": "2.0",

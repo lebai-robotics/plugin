@@ -7,7 +7,7 @@
 </head>
 
 <body>
-	<form>
+	<div>
 		手臂IP<br>
 		<input type="text" id="ip">
 		<br>
@@ -17,16 +17,37 @@
 			<option value="toHand">眼在手外</option>
 		</select>
 		<br>
-		角点行数<br>
-		<input type="text" id="row">
+		<hr />
+		<button onclick="use_tool('apriltag')">使用apriltag进行标定</button>
+		<button onclick="use_tool('grid')">使用网格标定板进行标定</button>
 		<br>
-		角点列数<br>
-		<input type="text" id="col">
-		<br>
-		格子长度(单位m)<br>
-		<input type="text" id="width">
-		<br>
-	</form>
+		<div id="use_apriltag" style="display: none;">
+			tag_family<br>
+			<select id="tag_family">
+				<option value="tag16h5">tag16h5</option>
+				<option value="tag25h9">tag25h9</option>
+				<option value="tag36h11" selected>tag36h11</option>
+			</select>
+			<br>
+			tag_size(单位m)<br>
+			<input type="text" id="tag_size">
+			<br>
+			tag_id<br>
+			<input type="text" id="tag_id">
+			<br>
+		</div>
+		<div id="use_grid">
+			角点行数<br>
+			<input type="text" id="row">
+			<br>
+			角点列数<br>
+			<input type="text" id="col">
+			<br>
+			格子长度(单位m)<br>
+			<input type="text" id="width">
+			<br>
+		</div>
+	</div>
 	<button onclick="save()">保存参数</button>
 	<button onclick="get()">刷新参数</button>
 	<br>
@@ -69,6 +90,20 @@
 </body>
 
 <script>
+	function use_tool(tool) {
+		if (tool == "apriltag") {
+			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
+				alert("初次标定只能使用网格标定板");
+				return;
+			}
+			document.getElementById("use_apriltag").style.display = "inline";
+			document.getElementById("use_grid").style.display = "none";
+		} else {
+			document.getElementById("use_apriltag").style.display = "none";
+			document.getElementById("use_grid").style.display = "inline";
+		}
+	}
+
 	var ws;
 	var rpc_data = {
 		"jsonrpc": "2.0",
@@ -82,6 +117,11 @@
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_ip",
 			"value": document.getElementById("ip").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tool",
+			"value": document.getElementById("use_grid").style.display == "none" ? 'apriltag' : 'grid',
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
@@ -104,12 +144,32 @@
 			"value": document.getElementById("width").value
 		};
 		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_family",
+			"value": document.getElementById("tag_family").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_size",
+			"value": document.getElementById("tag_size").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_id",
+			"value": document.getElementById("tag_id").value
+		};
+		ws.send(JSON.stringify(rpc_data));
 	}
 	function get() {
 		rpc_data.method = "get_item";
 		rpc_data.id = 30;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_ip",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 31;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tool",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 40;
@@ -130,6 +190,21 @@
 		rpc_data.id = 43;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_width",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 46;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_family",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 47;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_size",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 48;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_id",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 51;
@@ -277,6 +352,9 @@
 				if (id == 30) {
 					document.getElementById("ip").value = value || "127.0.0.1";
 				}
+				if (id == 31) {
+					document.getElementById("tool").value = value || "grid";
+				}
 				if (id == 40) {
 					document.getElementById("type").value = value || "inHand";
 				}
@@ -288,6 +366,15 @@
 				}
 				if (id == 43) {
 					document.getElementById("width").value = value || "0.03";
+				}
+				if (id == 46) {
+					document.getElementById("tag_family").value = value || "tag36h11";
+				}
+				if (id == 47) {
+					document.getElementById("tag_size").value = value || "0.04";
+				}
+				if (id == 48) {
+					document.getElementById("tag_id").value = value || "0";
 				}
 				if (id == 51) {
 					window.cmd_record = value || "";
