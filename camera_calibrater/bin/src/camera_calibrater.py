@@ -78,8 +78,10 @@ def get_cmd():
     if cmd and cmd != "":
         return "clear"
     cmd = (lebai.get_item("plugin_camera_calibrater_cmd_calibrate"))['value']
+    if cmd and cmd == "hand":
+        return "calibrate_hand"
     if cmd and cmd != "":
-        return "calibrate"
+        return "calibrate_camera"
     cmd = (lebai.get_item("plugin_camera_calibrater_cmd_record"))['value']
     if cmd and cmd != "":
         return "record"
@@ -172,11 +174,74 @@ def main():
             # 清除数据
             clear_imgs()
             lebai.set_item("plugin_camera_calibrater_i", str(0))
-        if cmd == "calibrate":
+        if cmd == "calibrate_camera":
             if get_i() < 9:
                 print("image not enough")
                 lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
+            # 标定
+            R_chess2cam = [] # 棋盘相对于摄像头的姿态
+            T_chess2cam = [] # 棋盘相对于摄像头的位置
+
+            cp_int = np.zeros((row * col, 3), np.float32)
+            cp_int[:, :2] = np.mgrid[0:row, 0:col].T.reshape(-1, 2)
+            cp_world = cp_int * width
+            obj_points = []  # 存储物理坐标
+            image_points = []  # 存储角点像素坐标
+            for i in range(1, get_i()+1):
+                img = cv2.imread(os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)), cv2.IMREAD_GRAYSCALE)
+                if img.size == 0:
+                    continue
+                ret, corners = cv2.findChessboardCorners(img, (row, col), None)
+                if not ret or len(corners) != row * col:
+                    continue
+                # cv2.find4QuadCornerSubpix(img, corners, (row, col))
+                obj_points.append(cp_world)
+                image_points.append(corners)
+            # 进行相机标定
+            ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
+            if not ret:
+                print("failed to calibrateCamera")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
+                continue
+            # 计算投影误差
+            mean_error = 0
+            error_points = []  # 坐标误差
+            for i in range(len(obj_points)):
+                imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coeffs)
+                error = cv2.norm(image_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+                error_points.append(error)
+                mean_error += error
+            mean_error = mean_error / len(obj_points)
+
+            bad_points = []  #异常坐标
+            for i in range(len(obj_points)):
+                if error_points[i] > max(mean_error, 0.1) * 1.5:
+                    print("remove bad images:", error_points[i])
+                    bad_points.append(i)
+            for i in bad_points[::-1]:
+                end2base.pop(i)
+                obj_points.pop(i)
+                image_points.pop(i)
+
+            ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
+            if not ret:
+                print("failed to calibrateCamera")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
+                continue
+            lebai.set_item("plugin_camera_calibrater_camera_matrix", json.dumps(camera_matrix.tolist())) # 相机内参
+            lebai.set_item("plugin_camera_calibrater_dist_coeffs", json.dumps(dist_coeffs.tolist())) # 相机畸变
+            clear_imgs()
+            lebai.set_item("plugin_camera_calibrater_i", str(0))
+        if cmd == "calibrate_hand":
+            if get_i() < 9:
+                print("image not enough")
+                lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
+                continue
+            dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
+            dist_coeffs = json.loads(dist_coeffs)
+            camera_matrix = (lebai.get_item("plugin_camera_calibrater_camera_matrix"))['value']
+            camera_matrix = json.loads(camera_matrix)
             # 标定
             end2base = [] # 法兰相对于基座的位姿
             R_chess2cam = [] # 棋盘相对于摄像头的姿态
@@ -202,39 +267,6 @@ def main():
                     end2base.append(p)
                     obj_points.append(cp_world)
                     image_points.append(corners)
-                # 进行相机标定
-                ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
-                if not ret:
-                    print("failed to calibrateCamera")
-                    lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
-                    continue
-                # 计算投影误差
-                mean_error = 0
-                error_points = []  # 坐标误差
-                for i in range(len(obj_points)):
-                    imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coeffs)
-                    error = cv2.norm(image_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
-                    error_points.append(error)
-                    mean_error += error
-                mean_error = mean_error / len(obj_points)
-
-                bad_points = []  #异常坐标
-                for i in range(len(obj_points)):
-                    if error_points[i] > max(mean_error, 0.1) * 1.5:
-                        print("remove bad images:", error_points[i])
-                        bad_points.append(i)
-                for i in bad_points[::-1]:
-                    end2base.pop(i)
-                    obj_points.pop(i)
-                    image_points.pop(i)
-
-                ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
-                if not ret:
-                    print("failed to calibrateCamera")
-                    lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
-                    continue
-                lebai.set_item("plugin_camera_calibrater_camera_matrix", json.dumps(camera_matrix.tolist())) # 相机内参
-                lebai.set_item("plugin_camera_calibrater_dist_coeffs", json.dumps(dist_coeffs.tolist())) # 相机畸变
                 # 手眼标定
                 for i in range(0,len(image_points)):
                     ret, rvec, tvec = cv2.solvePnP(cp_world, image_points[i], camera_matrix, distCoeffs=dist_coeffs)

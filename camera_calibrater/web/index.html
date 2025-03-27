@@ -7,20 +7,39 @@
 </head>
 
 <body>
+	<span>
+		<input type="radio" name="calibrate" id="camera" value="camera" onclick="use_calibrate('camera')" checked />
+		<label for="camera">相机标定</label>
+	</span>
+	<span>
+		<input type="radio" name="calibrate" id="hand" value="hand" onclick="return use_calibrate('hand')" />
+		<label for="hand">手眼标定</label>
+	</span>
+	<br>
 	<div>
-		手臂IP<br>
-		<input type="text" id="ip">
-		<br>
-		相机位置<br>
-		<select id="type">
-			<option value="inHand" selected>眼在手上</option>
-			<option value="toHand">眼在手外</option>
-		</select>
-		<br>
-		<hr />
-		<button onclick="use_tool('apriltag')">使用apriltag进行标定</button>
-		<button onclick="use_tool('grid')">使用网格标定板进行标定</button>
-		<br>
+		<div id="hand_cfg" style="display: none;">
+			手臂IP<br>
+			<input type="text" id="ip">
+			<br>
+			相机位置<br>
+			<select id="type">
+				<option value="inHand" selected>眼在手上</option>
+				<option value="toHand">眼在手外</option>
+			</select>
+			<br>
+			<hr />
+		</div>
+		<div id="select_tool" style="display: none;">
+			<span>
+				<input type="radio" name="tool" id="grid" value="grid" onclick="use_tool('grid')" checked />
+				<label for="grid">使用网格标定板进行标定</label>
+			</span>
+			<span>
+				<input type="radio" name="tool" id="apriltag" value="apriltag" onclick="return use_tool('apriltag')" />
+				<label for="apriltag">使用apriltag进行标定</label>
+			</span>
+			<br>
+		</div>
 		<div id="use_apriltag" style="display: none;">
 			tag_family<br>
 			<select id="tag_family">
@@ -90,11 +109,25 @@
 </body>
 
 <script>
+	function use_calibrate(way) {
+		if (way == "hand") {
+			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
+				alert("请先使用 网格标定板 完成 相机标定");
+				return false;
+			}
+			document.getElementById("hand_cfg").style.display = "inline";
+			document.getElementById("select_tool").style.display = "inline";
+		} else {
+			document.getElementById("hand_cfg").style.display = "none";
+			document.getElementById("select_tool").style.display = "none";
+			use_tool('grid');
+		}
+	}
 	function use_tool(tool) {
 		if (tool == "apriltag") {
 			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
 				alert("初次标定只能使用网格标定板");
-				return;
+				return false;
 			}
 			document.getElementById("use_apriltag").style.display = "inline";
 			document.getElementById("use_grid").style.display = "none";
@@ -300,11 +333,12 @@
 		wait_cmd_finish();
 	}
 	function calibrate() {
+		let way = document.getElementById("hand_cfg").style.display == "none" ? "camera" : "hand";
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_cmd_calibrate",
-			"value": "calibrate"
+			"value": way,
 		};
 		ws.send(JSON.stringify(rpc_data));
 		wait_cmd_finish();
