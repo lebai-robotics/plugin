@@ -26,6 +26,11 @@ def get_ip():
     if not val:
         val = "127.0.0.1"
     return val
+def get_calibrate():
+    val = (lebai.get_item("plugin_camera_calibrater_calibrate"))['value']
+    if not val:
+        val = "camera"
+    return val
 def get_tool():
     tp = (lebai.get_item("plugin_camera_calibrater_tool"))['value']
     if not tp:
@@ -131,7 +136,8 @@ def main():
             if tool == 'apriltag':
                 tag_family = get_tag_family()
                 at_detector = apriltag.Detector(families=tag_family)
-                tags = at_detector.detect(img)
+                gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                tags = at_detector.detect(gray_img)
                 for tag in tags:
                     for corner in tag.corners:
                         cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
@@ -155,7 +161,8 @@ def main():
                 tag_family = get_tag_family()
                 tag_id = get_tag_id()
                 at_detector = apriltag.Detector(families=tag_family)
-                tags = at_detector.detect(img)
+                gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                tags = at_detector.detect(gray_img)
                 finded = False
                 for tag in tags:
                     if int(tag.tag_id) == tag_id:
@@ -164,12 +171,13 @@ def main():
                 if not finded:
                     lebai.set_item("plugin_camera_calibrater_cmd_record", "")
                     continue
-            lebai_real = lebai_sdk.connect(get_ip(), False)
-            i = get_i()+1
+            i = get_i() + 1
+            if get_calibrate() == 'hand':
+                lebai_real = lebai_sdk.connect(get_ip(), False)
+                pose = (lebai_real.get_kin_data())["actual_flange_pose"]
+                lebai.set_item("plugin_camera_calibrater_pose_{}".format(i), json.dumps(pose))
             lebai.set_item("plugin_camera_calibrater_i", str(i))
             shutil.copy(os.path.join(images_dir, "img.jpg"), os.path.join(images_dir, "camera_calibrater.{}.webp".format(i)))
-            pose = (lebai_real.get_kin_data())["actual_flange_pose"]
-            lebai.set_item("plugin_camera_calibrater_pose_{}".format(i), json.dumps(pose))
         if cmd == "clear":
             # 清除数据
             clear_imgs()

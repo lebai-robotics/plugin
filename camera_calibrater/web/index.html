@@ -153,6 +153,11 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_calibrate",
+			"value": document.getElementById("hand_cfg").style.display == "none" ? "camera" : "hand",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_tool",
 			"value": document.getElementById("use_grid").style.display == "none" ? 'apriltag' : 'grid',
 		};
@@ -201,6 +206,11 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 31;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_calibrate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 32;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_calibrater_tool",
 		};
@@ -387,7 +397,18 @@
 					document.getElementById("ip").value = value || "127.0.0.1";
 				}
 				if (id == 31) {
-					document.getElementById("tool").value = value || "grid";
+					let calibrate = value || "camera";
+					setTimeout(() => {
+						document.querySelector("input[name='calibrate']#" + calibrate).checked = true;
+						use_calibrate(calibrate);
+					}, 1000);
+				}
+				if (id == 32) {
+					let tool = value || "grid"
+					setTimeout(() => {
+						document.querySelector("input[name='tool']#" + tool).checked = true;
+						use_tool(tool);
+					}, 1100);
 				}
 				if (id == 40) {
 					document.getElementById("type").value = value || "inHand";
