@@ -276,15 +276,11 @@ def main():
                     image_points.append(corners)
                 # 手眼标定
                 for i in range(0,len(image_points)):
-                    ret, rvec, tvec = cv2.solvePnP(cp_world, image_points[i], camera_matrix, distCoeffs=dist_coeffs)
+                    ret, rvec, tvec = cv2.solvePnP(cp_world, image_points[i], np.array(camera_matrix), distCoeffs=np.array(dist_coeffs))
                     RT = np.column_stack(((cv2.Rodrigues(rvec))[0], tvec))
                     R_chess2cam.append(RT[:3, :3])
                     T_chess2cam.append(RT[:3, 3].reshape((3, 1)))
             if tool == 'apriltag':
-                dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
-                dist_coeffs = json.loads(dist_coeffs)
-                camera_matrix = (lebai.get_item("plugin_camera_calibrater_camera_matrix"))['value']
-                camera_matrix = json.loads(camera_matrix)
                 fx = camera_matrix[0][0]
                 fy = camera_matrix[1][1]
                 cx = camera_matrix[0][2]
