@@ -228,7 +228,6 @@ def main():
                     print("remove bad images:", error_points[i])
                     bad_points.append(i)
             for i in bad_points[::-1]:
-                end2base.pop(i)
                 obj_points.pop(i)
                 image_points.pop(i)
 
