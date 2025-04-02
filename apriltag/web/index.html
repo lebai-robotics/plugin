@@ -19,18 +19,21 @@
 		tag_size(单位m)<br>
 		<input type="text" id="tag_size">
 		<br>
-		<hr>
-		<button onclick="switchTab('signal')">使用信号量读取标签位置</button>
-		<button onclick="switchTab('modbus')">使用Modbus读取标签位置</button>
+		<span>
+			<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked />
+			<label for="signal">使用信号量读取标签位置</label>
+		</span>
+		<span>
+			<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" />
+			<label for="modbus">使用Modbus读取标签位置</label>
+		</span>
 		<br/>
 		<div id="tab_signal">
-			使用信号量读取标签位置<br>
 			signal<br>
-			<input type="text" id="signal">
+			<input type="text" id="signal_id">
 			<br>
 		</div>
 		<div id="tab_modbus" style="display: none;">
-			使用Modbus读取标签位置<br>
 			modbus_address<br>
 			<input type="text" id="modbus_address">
 			<br>
@@ -84,7 +87,7 @@
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
 			"key": "plugin_apriltag_signal",
-			"value": document.getElementById("signal").value
+			"value": document.getElementById("signal_id").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
@@ -102,7 +105,7 @@
 		rpc_data.id = 1;
 		rpc_data.method = "set_signal";
 		rpc_data.params[0] = {
-			"key": Number(document.getElementById("signal").value),
+			"key": Number(document.getElementById("signal_id").value),
 			"value": 1
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -171,7 +174,7 @@
 					document.getElementById("tag_size").value = value || "0.04";
 				}
 				if (id == 51) {
-					document.getElementById("signal").value = value || "13";
+					document.getElementById("signal_id").value = value || "13";
 				}
 				if (id == 55) {
 					document.getElementById("modbus_address").value = value || "";

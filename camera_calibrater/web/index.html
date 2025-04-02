@@ -74,20 +74,24 @@
 	<hr>
 	<img src="" id="pic">
 	<br>
-	<br>
-	<button onclick="start_teach_mode()">启动示教模式</button>
-	<button onclick="end_teach_mode()">退出示教模式</button>
-	<button onclick="open_claw()">开夹爪</button>
+	<button onclick="record()" id="record">记录点位</button>
+	<button onclick="clear_data()">清除所有点位</button>
+	<button onclick="calibrate()">标定</button>
 	<br>
 	<br>
 	采集15~30张不同位置的图片后再点击“标定”
 	<br>
 	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
 	<br>
-	<button onclick="record()" id="record">记录点位</button>
-	<button onclick="clear_data()">清除所有点位</button>
-	<button onclick="calibrate()">标定</button>
 	<br>
+	<div id="robot_ctl" style="display: none;">
+		<button onclick="start_teach_mode()">启动示教模式</button>
+		<button onclick="end_teach_mode()">退出示教模式</button>
+		<button onclick="set_claw(100)">开夹爪</button>
+		<button onclick="set_claw(0)">关夹爪</button>
+		<br>
+		<br>
+	</div>
 	相机内参<br>
 	<textarea id="matrix" rows="3" disabled style="width:80%;"></textarea>
 	<br>
@@ -117,9 +121,11 @@
 			}
 			document.getElementById("hand_cfg").style.display = "inline";
 			document.getElementById("select_tool").style.display = "inline";
+			document.getElementById("robot_ctl").style.display = "inline";
 		} else {
 			document.getElementById("hand_cfg").style.display = "none";
 			document.getElementById("select_tool").style.display = "none";
+			document.getElementById("robot_ctl").style.display = "none";
 			use_tool('grid');
 		}
 	}
@@ -310,11 +316,11 @@
 	async function end_teach_mode() {
 		await call_arm("end_teach_mode", {});
 	}
-	async function open_claw() {
+	async function set_claw(amplitude) {
 		await call_arm("init_claw", { force: false, });
 		await call_arm("set_claw", {
 			force: 0,
-			amplitude: 100,
+			amplitude: amplitude,
 		});
 	}
 
