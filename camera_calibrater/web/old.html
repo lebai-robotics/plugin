@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>相机标定</title>
+</head>
+
+<body>
+	<span>
+		<input type="radio" name="calibrate" id="camera" value="camera" onclick="use_calibrate('camera')" checked />
+		<label for="camera">相机标定</label>
+	</span>
+	<span>
+		<input type="radio" name="calibrate" id="hand" value="hand" onclick="return use_calibrate('hand')" />
+		<label for="hand">手眼标定</label>
+	</span>
+	<br>
+	<div>
+		<div id="hand_cfg" style="display: none;">
+			手臂IP<br>
+			<input type="text" id="ip">
+			<br>
+			相机位置<br>
+			<select id="type">
+				<option value="inHand" selected>眼在手上</option>
+				<option value="toHand">眼在手外</option>
+			</select>
+			<br>
+			<hr />
+		</div>
+		<div id="select_tool" style="display: none;">
+			<span>
+				<input type="radio" name="tool" id="grid" value="grid" onclick="use_tool('grid')" checked />
+				<label for="grid">使用网格标定板进行标定</label>
+			</span>
+			<span>
+				<input type="radio" name="tool" id="apriltag" value="apriltag" onclick="return use_tool('apriltag')" />
+				<label for="apriltag">使用apriltag进行标定</label>
+			</span>
+			<br>
+		</div>
+		<div id="use_apriltag" style="display: none;">
+			tag_family<br>
+			<select id="tag_family">
+				<option value="tag16h5">tag16h5</option>
+				<option value="tag25h9">tag25h9</option>
+				<option value="tag36h11" selected>tag36h11</option>
+			</select>
+			<br>
+			tag_size(单位m)<br>
+			<input type="text" id="tag_size">
+			<br>
+			tag_id<br>
+			<input type="text" id="tag_id">
+			<br>
+		</div>
+		<div id="use_grid">
+			角点行数<br>
+			<input type="text" id="row">
+			<br>
+			角点列数<br>
+			<input type="text" id="col">
+			<br>
+			格子长度(单位m)<br>
+			<input type="text" id="width">
+			<br>
+		</div>
+	</div>
+	<button onclick="save()">保存参数</button>
+	<button onclick="get()">刷新参数</button>
+	<br>
+	<hr>
+	<hr>
+	<img src="" id="pic">
+	<br>
+	<button onclick="record()" id="record">记录点位</button>
+	<button onclick="clear_data()">清除所有点位</button>
+	<button onclick="calibrate()">标定</button>
+	<br>
+	<br>
+	采集15~30张不同位置的图片后再点击“标定”
+	<br>
+	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
+	<br>
+	<br>
+	<div id="robot_ctl" style="display: none;">
+		<button onclick="start_teach_mode()">启动示教模式</button>
+		<button onclick="end_teach_mode()">退出示教模式</button>
+		<button onclick="set_claw(100)">开夹爪</button>
+		<button onclick="set_claw(0)">关夹爪</button>
+		<br>
+		<br>
+	</div>
+	相机内参<br>
+	<textarea id="matrix" rows="3" disabled style="width:80%;"></textarea>
+	<br>
+	相机畸变<br>
+	<textarea id="dist_coeffs" rows="3" disabled style="width:80%;"></textarea>
+	<br>
+	相机位置<br>
+	<textarea id="data" rows="3" disabled style="width:80%;"></textarea>
+	<br>
+	<img src="" id="pic9">
+	<img src="" id="pic8">
+	<img src="" id="pic7">
+	<img src="" id="pic6">
+	<img src="" id="pic5">
+	<img src="" id="pic4">
+	<img src="" id="pic3">
+	<img src="" id="pic2">
+	<img src="" id="pic1">
+</body>
+
+<script>
+	function use_calibrate(way) {
+		if (way == "hand") {
+			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
+				alert("请先使用 网格标定板 完成 相机标定");
+				return false;
+			}
+			document.getElementById("hand_cfg").style.display = "inline";
+			document.getElementById("select_tool").style.display = "inline";
+			document.getElementById("robot_ctl").style.display = "inline";
+		} else {
+			document.getElementById("hand_cfg").style.display = "none";
+			document.getElementById("select_tool").style.display = "none";
+			document.getElementById("robot_ctl").style.display = "none";
+			use_tool('grid');
+		}
+	}
+	function use_tool(tool) {
+		if (tool == "apriltag") {
+			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
+				alert("初次标定只能使用网格标定板");
+				return false;
+			}
+			document.getElementById("use_apriltag").style.display = "inline";
+			document.getElementById("use_grid").style.display = "none";
+		} else {
+			document.getElementById("use_apriltag").style.display = "none";
+			document.getElementById("use_grid").style.display = "inline";
+		}
+	}
+
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_ip",
+			"value": document.getElementById("ip").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_calibrate",
+			"value": document.getElementById("hand_cfg").style.display == "none" ? "camera" : "hand",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tool",
+			"value": document.getElementById("use_grid").style.display == "none" ? 'apriltag' : 'grid',
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_type",
+			"value": document.getElementById("type").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_row",
+			"value": document.getElementById("row").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_col",
+			"value": document.getElementById("col").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_width",
+			"value": document.getElementById("width").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_family",
+			"value": document.getElementById("tag_family").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_size",
+			"value": document.getElementById("tag_size").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_id",
+			"value": document.getElementById("tag_id").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 30;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_ip",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 31;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_calibrate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 32;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tool",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 40;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_type",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 41;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_row",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 42;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_col",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 43;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_width",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 46;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_family",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 47;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_size",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 48;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_tag_id",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 51;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_record",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 52;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_clear",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 53;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_calibrate",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 60;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_i",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 61;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_camera_matrix",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 62;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_dist_coeffs",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 63;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_data",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+
+	async function call_arm(method, params) {
+		let ip = document.getElementById("ip").value;
+		let data = {
+			"jsonrpc": "2.0",
+			"method": method,
+			"params": [params],
+			"id": 2
+		};
+		return await fetch(`http://${ip}:3021/`, {
+			method: "POST",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data),
+		});
+	}
+	async function start_teach_mode() {
+		await call_arm("start_teach_mode", {});
+	}
+	async function end_teach_mode() {
+		await call_arm("end_teach_mode", {});
+	}
+	async function set_claw(amplitude) {
+		await call_arm("init_claw", { force: false, });
+		await call_arm("set_claw", {
+			force: 0,
+			amplitude: amplitude,
+		});
+	}
+
+	function record() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_record",
+			"value": "record"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function clear_data() {
+		let yes = confirm('确认要清除所有位点吗？');
+		if (!yes) {
+			return;
+		}
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_clear",
+			"value": "clear"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function calibrate() {
+		let way = document.getElementById("hand_cfg").style.display == "none" ? "camera" : "hand";
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_calibrate",
+			"value": way,
+		};
+		ws.send(JSON.stringify(rpc_data));
+		wait_cmd_finish();
+	}
+	function wait_cmd_finish() {
+		get();
+		let timer;
+		timer = setInterval(() => {
+			get();
+			if (window.cmd_record == "" && window.cmd_clear == "" && window.cmd_calibrate == "") {
+				clearInterval(timer);
+				refresh_img();
+			}
+		}, 1000);
+	}
+	function refresh_img() {
+		document.getElementById("pic1").src = "../../camera/images/camera_calibrater.1.webp?" + Date.now();
+		document.getElementById("pic2").src = "../../camera/images/camera_calibrater.2.webp?" + Date.now();
+		document.getElementById("pic3").src = "../../camera/images/camera_calibrater.3.webp?" + Date.now();
+		document.getElementById("pic4").src = "../../camera/images/camera_calibrater.4.webp?" + Date.now();
+		document.getElementById("pic5").src = "../../camera/images/camera_calibrater.5.webp?" + Date.now();
+		document.getElementById("pic6").src = "../../camera/images/camera_calibrater.6.webp?" + Date.now();
+		document.getElementById("pic7").src = "../../camera/images/camera_calibrater.7.webp?" + Date.now();
+		document.getElementById("pic8").src = "../../camera/images/camera_calibrater.8.webp?" + Date.now();
+		document.getElementById("pic9").src = "../../camera/images/camera_calibrater.9.webp?" + Date.now();
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 30) {
+					document.getElementById("ip").value = value || "127.0.0.1";
+				}
+				if (id == 31) {
+					let calibrate = value || "camera";
+					setTimeout(() => {
+						document.querySelector("input[name='calibrate']#" + calibrate).checked = true;
+						use_calibrate(calibrate);
+					}, 1000);
+				}
+				if (id == 32) {
+					let tool = value || "grid"
+					setTimeout(() => {
+						document.querySelector("input[name='tool']#" + tool).checked = true;
+						use_tool(tool);
+					}, 1100);
+				}
+				if (id == 40) {
+					document.getElementById("type").value = value || "inHand";
+				}
+				if (id == 41) {
+					document.getElementById("row").value = value || "8";
+				}
+				if (id == 42) {
+					document.getElementById("col").value = value || "5";
+				}
+				if (id == 43) {
+					document.getElementById("width").value = value || "0.03";
+				}
+				if (id == 46) {
+					document.getElementById("tag_family").value = value || "tag36h11";
+				}
+				if (id == 47) {
+					document.getElementById("tag_size").value = value || "0.04";
+				}
+				if (id == 48) {
+					document.getElementById("tag_id").value = value || "0";
+				}
+				if (id == 51) {
+					window.cmd_record = value || "";
+				}
+				if (id == 52) {
+					window.cmd_clear = value || "";
+				}
+				if (id == 53) {
+					window.cmd_calibrate = value || "";
+				}
+				if (id == 60) {
+					document.getElementById("record").innerText = "记录点位" + value;
+				}
+				if (id == 61) {
+					document.getElementById("matrix").value = value || "";
+				}
+				if (id == 62) {
+					document.getElementById("dist_coeffs").value = value || "";
+				}
+				if (id == 63) {
+					document.getElementById("data").value = value || "";
+				}
+			}
+		}
+	}
+	connect();
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+
+	function preview() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_calibrater_cmd_preview",
+			"value": "preview"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		document.getElementById("pic").src = "../../camera/images/camera_calibrater.webp?" + Date.now()
+	}
+	setInterval(() => {
+		preview();
+	}, 1000);
+</script>
+
+</html>

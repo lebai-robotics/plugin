@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>摄像头配置</title>
+</head>
+
+<body>
+	<form>
+		index(深度摄像头填 -1)<br>
+		<input type="number" id="index">
+		<br>
+		width<br>
+		<input type="number" id="width">
+		<br>
+		height<br>
+		<input type="number" id="height">
+		<br>
+		翻转<br>
+		<select id="flip">
+			<option value="-2" selected>不翻转</option>
+			<option value="0">垂直翻转</option>
+			<option value="1">水平翻转</option>
+			<option value="-1">翻转180°</option>
+		</select>
+	</form>
+	<button onclick="save()">保存参数</button>
+	<button onclick="get()">刷新参数</button>
+	<br>
+	<img src="" id="pic">
+</body>
+
+<script>
+	var ws;
+	var rpc_data = {
+		"jsonrpc": "2.0",
+		"method": "",
+		"params": [],
+		"id": 2
+	};
+	function save() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_index",
+			"value": document.getElementById("index").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_width",
+			"value": document.getElementById("width").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_height",
+			"value": document.getElementById("height").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_flip",
+			"value": document.getElementById("flip").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cmd_reinit",
+			"value": "reinit"
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+	function get() {
+		rpc_data.method = "get_item";
+		rpc_data.id = 20;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_indexs",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 21;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_index",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 22;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_width",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 23;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_height",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 24;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_flip",
+		};
+		ws.send(JSON.stringify(rpc_data));
+	}
+
+	function connect() {
+		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+		ws.onopen = () => {
+			console.log("open ws");
+			get();
+		};
+		ws.onmessage = (data) => {
+			var msg = JSON.parse(data.data);
+			if (msg.error) {
+				console.log(msg.error);
+			} else {
+				var id = msg.id;
+				var value = msg.result.value;
+				if (value === undefined) {
+					return;
+				}
+				if (id == 20) {
+					let options = [];
+					let indexs = JSON.parse(value);
+					for (const i in indexs) {
+						let selected = indexs[i] == document.getElementById("index").value ? "selected" : "";
+						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
+					}
+					if (options.length == 0) {
+						document.getElementById("index").outerHTML = `<input type="number" id="index">`;
+					} else {
+						document.getElementById("index").outerHTML = `<select id="index"></select>`;
+						document.getElementById("index").innerHTML = options;
+					}
+				}
+				if (id == 21) {
+					document.getElementById("index").value = value || "-1";
+				}
+				if (id == 22) {
+					document.getElementById("width").value = value || "1280";
+				}
+				if (id == 23) {
+					document.getElementById("height").value = value || "720";
+				}
+				if (id == 24) {
+					document.getElementById("flip").value = value || "-2";
+				}
+			}
+		}
+	}
+	connect();
+
+	function shoot() {
+		rpc_data.id = 10;
+		rpc_data.method = "set_item";
+		rpc_data.params[0] = {
+			"key": "plugin_camera_cmd_shoot",
+			"value": "shoot"
+		};
+		ws.send(JSON.stringify(rpc_data));
+		document.getElementById("pic").src = "../images/img.jpg?" + Date.now();
+	}
+	setInterval(() => {
+		shoot();
+	}, 1000);
+
+	setInterval(() => {
+		if (ws.readyState == ws.CLOSED) {
+			connect();
+		}
+	}, 1000);
+</script>
+
+</html>
