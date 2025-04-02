@@ -3,116 +3,171 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>相机标定</title>
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<span>
-		<input type="radio" name="calibrate" id="camera" value="camera" onclick="use_calibrate('camera')" checked />
-		<label for="camera">相机标定</label>
-	</span>
-	<span>
-		<input type="radio" name="calibrate" id="hand" value="hand" onclick="return use_calibrate('hand')" />
-		<label for="hand">手眼标定</label>
-	</span>
-	<br>
-	<div>
-		<div id="hand_cfg" style="display: none;">
-			手臂IP<br>
-			<input type="text" id="ip">
-			<br>
-			相机位置<br>
-			<select id="type">
-				<option value="inHand" selected>眼在手上</option>
-				<option value="toHand">眼在手外</option>
-			</select>
-			<br>
-			<hr />
+	<div class="radio-group">
+		<label class="radio-option">
+			<input type="radio" name="calibrate" id="camera" value="camera" onclick="use_calibrate('camera')" checked />
+			相机标定
+		</label>
+		<label class="radio-option">
+			<input type="radio" name="calibrate" id="hand" value="hand" onclick="return use_calibrate('hand')" />
+			手眼标定
+		</label>
+	</div>
+
+	<div class="container">
+		<div class="control-section">
+			<h2>标定参数配置</h2>
+			<div id="hand_cfg" style="display: none;">
+				<div class="form-group">
+					<label for="ip">手臂IP</label>
+					<input type="text" id="ip" class="form-control">
+				</div>
+				<div class="form-group">
+					<label for="type">相机位置</label>
+					<select id="type" class="form-control">
+						<option value="inHand" selected>眼在手上</option>
+						<option value="toHand">眼在手外</option>
+					</select>
+				</div>
+				<hr />
+			</div>
+
+			<div id="select_tool" style="display: none;" class="radio-group">
+				<label class="radio-option">
+					<input type="radio" name="tool" id="grid" value="grid" onclick="use_tool('grid')" checked />
+					使用网格标定板进行标定
+				</label>
+				<label class="radio-option">
+					<input type="radio" name="tool" id="apriltag" value="apriltag" onclick="return use_tool('apriltag')" />
+					使用apriltag进行标定
+				</label>
+			</div>
+
+			<div id="use_apriltag" style="display: none;">
+				<div class="form-group">
+					<label for="tag_family">tag_family</label>
+					<select id="tag_family" class="form-control">
+						<option value="tag16h5">tag16h5</option>
+						<option value="tag25h9">tag25h9</option>
+						<option value="tag36h11" selected>tag36h11</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="tag_size">tag_size(单位m)</label>
+					<input type="text" id="tag_size" class="form-control">
+				</div>
+				<div class="form-group">
+					<label for="tag_id">tag_id</label>
+					<input type="text" id="tag_id" class="form-control">
+				</div>
+			</div>
+
+			<div id="use_grid">
+				<div class="form-group">
+					<label for="row">角点行数</label>
+					<input type="text" id="row" class="form-control">
+				</div>
+				<div class="form-group">
+					<label for="col">角点列数</label>
+					<input type="text" id="col" class="form-control">
+				</div>
+				<div class="form-group">
+					<label for="width">格子长度(单位m)</label>
+					<input type="text" id="width" class="form-control">
+				</div>
+			</div>
+
+			<div class="button-group">
+				<button onclick="save()" class="btn btn-primary">保存参数</button>
+				<button onclick="get()" class="btn btn-secondary">刷新参数</button>
+			</div>
+			
+			<div id="robot_ctl" style="display: none;" class="button-group">
+				<button onclick="start_teach_mode()" class="btn btn-secondary">启动示教模式</button>
+				<button onclick="end_teach_mode()" class="btn btn-secondary">退出示教模式</button>
+				<button onclick="set_claw(100)" class="btn btn-secondary">开夹爪</button>
+				<button onclick="set_claw(0)" class="btn btn-secondary">关夹爪</button>
+			</div>
 		</div>
-		<div id="select_tool" style="display: none;">
-			<span>
-				<input type="radio" name="tool" id="grid" value="grid" onclick="use_tool('grid')" checked />
-				<label for="grid">使用网格标定板进行标定</label>
-			</span>
-			<span>
-				<input type="radio" name="tool" id="apriltag" value="apriltag" onclick="return use_tool('apriltag')" />
-				<label for="apriltag">使用apriltag进行标定</label>
-			</span>
-			<br>
-		</div>
-		<div id="use_apriltag" style="display: none;">
-			tag_family<br>
-			<select id="tag_family">
-				<option value="tag16h5">tag16h5</option>
-				<option value="tag25h9">tag25h9</option>
-				<option value="tag36h11" selected>tag36h11</option>
-			</select>
-			<br>
-			tag_size(单位m)<br>
-			<input type="text" id="tag_size">
-			<br>
-			tag_id<br>
-			<input type="text" id="tag_id">
-			<br>
-		</div>
-		<div id="use_grid">
-			角点行数<br>
-			<input type="text" id="row">
-			<br>
-			角点列数<br>
-			<input type="text" id="col">
-			<br>
-			格子长度(单位m)<br>
-			<input type="text" id="width">
-			<br>
+
+		<div class="preview-section">
+			<div class="image-placeholder" id="image-placeholder">
+				<svg class="placeholder-icon" width="96" height="96" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<!-- 相机主体 -->
+					<path class="camera-body" d="M20 5h-3.17L15.5 3.12c-.39-.39-1.03-.88-1.4-.88h-4.2c-.37 0-1.01.49-1.4.88L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
+					
+					<!-- 镜头光圈 -->
+					<circle class="camera-lens-outer" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.5"/>
+					
+					<!-- 镜头内部 -->
+					<circle class="camera-lens" cx="12" cy="12" r="3.5"/>
+					
+					<!-- 闪光灯 -->
+					<circle class="camera-flash" cx="7" cy="8" r="1"/>
+				</svg>
+				<p>等待摄像头图像...</p>
+			</div>
+			<img src="" id="pic" class="main-image">
+			
+			<div class="button-group">
+				<button onclick="record()" id="record" class="btn btn-primary">记录点位</button>
+				<button onclick="clear_data()" class="btn btn-danger">清除所有点位</button>
+				<button onclick="calibrate()" class="btn btn-success">标定</button>
+			</div>
+			
+			<p class="hint-text">采集15~30张不同位置的图片后再点击"标定"</p>
+			<p class="warning-text">注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。</p>
 		</div>
 	</div>
-	<button onclick="save()">保存参数</button>
-	<button onclick="get()">刷新参数</button>
-	<br>
-	<hr>
-	<hr>
-	<img src="" id="pic">
-	<br>
-	<button onclick="record()" id="record">记录点位</button>
-	<button onclick="clear_data()">清除所有点位</button>
-	<button onclick="calibrate()">标定</button>
-	<br>
-	<br>
-	采集15~30张不同位置的图片后再点击“标定”
-	<br>
-	注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。
-	<br>
-	<br>
-	<div id="robot_ctl" style="display: none;">
-		<button onclick="start_teach_mode()">启动示教模式</button>
-		<button onclick="end_teach_mode()">退出示教模式</button>
-		<button onclick="set_claw(100)">开夹爪</button>
-		<button onclick="set_claw(0)">关夹爪</button>
-		<br>
-		<br>
+	
+	<div class="results-section">
+		<h2>标定结果</h2>
+		<div class="form-group">
+			<label for="matrix">相机内参</label>
+			<textarea id="matrix" rows="3" disabled class="form-control"></textarea>
+		</div>
+		<div class="form-group">
+			<label for="dist_coeffs">相机畸变</label>
+			<textarea id="dist_coeffs" rows="3" disabled class="form-control"></textarea>
+		</div>
+		<div class="form-group">
+			<label for="data">相机位置</label>
+			<textarea id="data" rows="3" disabled class="form-control"></textarea>
+		</div>
 	</div>
-	相机内参<br>
-	<textarea id="matrix" rows="3" disabled style="width:80%;"></textarea>
-	<br>
-	相机畸变<br>
-	<textarea id="dist_coeffs" rows="3" disabled style="width:80%;"></textarea>
-	<br>
-	相机位置<br>
-	<textarea id="data" rows="3" disabled style="width:80%;"></textarea>
-	<br>
-	<img src="" id="pic9">
-	<img src="" id="pic8">
-	<img src="" id="pic7">
-	<img src="" id="pic6">
-	<img src="" id="pic5">
-	<img src="" id="pic4">
-	<img src="" id="pic3">
-	<img src="" id="pic2">
-	<img src="" id="pic1">
+	
+	<div class="thumbnails-section">
+		<img src="" id="pic9" class="thumbnail">
+		<img src="" id="pic8" class="thumbnail">
+		<img src="" id="pic7" class="thumbnail">
+		<img src="" id="pic6" class="thumbnail">
+		<img src="" id="pic5" class="thumbnail">
+		<img src="" id="pic4" class="thumbnail">
+		<img src="" id="pic3" class="thumbnail">
+		<img src="" id="pic2" class="thumbnail">
+		<img src="" id="pic1" class="thumbnail">
+	</div>
+	
+	<div id="toast" class="toast"></div>
 </body>
 
 <script>
+	// 添加提示消息功能
+	function showToast(message, type = "") {
+		const toast = document.getElementById("toast");
+		toast.textContent = message;
+		toast.className = "toast show " + type;
+		setTimeout(() => {
+			toast.className = "toast";
+		}, 3000);
+	}
+	
 	function use_calibrate(way) {
 		if (way == "hand") {
 			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
@@ -203,6 +258,8 @@
 			"value": document.getElementById("tag_id").value
 		};
 		ws.send(JSON.stringify(rpc_data));
+		
+		showToast("参数保存成功", "success");
 	}
 	function get() {
 		rpc_data.method = "get_item";
@@ -291,6 +348,8 @@
 			"key": "plugin_camera_calibrater_data",
 		};
 		ws.send(JSON.stringify(rpc_data));
+		
+		showToast("正在刷新参数...", "");
 	}
 
 	async function call_arm(method, params) {
@@ -312,9 +371,11 @@
 	}
 	async function start_teach_mode() {
 		await call_arm("start_teach_mode", {});
+		showToast("示教模式已启动", "success");
 	}
 	async function end_teach_mode() {
 		await call_arm("end_teach_mode", {});
+		showToast("已退出示教模式", "success");
 	}
 	async function set_claw(amplitude) {
 		await call_arm("init_claw", { force: false, });
@@ -322,6 +383,7 @@
 			force: 0,
 			amplitude: amplitude,
 		});
+		showToast(amplitude === 100 ? "夹爪已打开" : "夹爪已关闭", "success");
 	}
 
 	function record() {
@@ -332,6 +394,7 @@
 			"value": "record"
 		};
 		ws.send(JSON.stringify(rpc_data));
+		showToast("正在记录点位...", "");
 		wait_cmd_finish();
 	}
 	function clear_data() {
@@ -346,6 +409,7 @@
 			"value": "clear"
 		};
 		ws.send(JSON.stringify(rpc_data));
+		showToast("正在清除所有点位...", "");
 		wait_cmd_finish();
 	}
 	function calibrate() {
@@ -357,6 +421,7 @@
 			"value": way,
 		};
 		ws.send(JSON.stringify(rpc_data));
+		showToast("开始标定，请稍候...", "");
 		wait_cmd_finish();
 	}
 	function wait_cmd_finish() {
@@ -367,6 +432,7 @@
 			if (window.cmd_record == "" && window.cmd_clear == "" && window.cmd_calibrate == "") {
 				clearInterval(timer);
 				refresh_img();
+				showToast("操作完成", "success");
 			}
 		}, 1000);
 	}
@@ -387,12 +453,14 @@
 
 		ws.onopen = () => {
 			console.log("open ws");
+			showToast("连接成功", "success");
 			get();
 		};
 		ws.onmessage = (data) => {
 			var msg = JSON.parse(data.data);
 			if (msg.error) {
 				console.log(msg.error);
+				showToast("发生错误: " + msg.error.message, "error");
 			} else {
 				var id = msg.id;
 				var value = msg.result.value;
@@ -460,6 +528,14 @@
 				}
 			}
 		}
+		
+		ws.onerror = () => {
+			showToast("连接错误，请检查网络", "error");
+		};
+		
+		ws.onclose = () => {
+			showToast("连接已断开，正在重连...", "error");
+		};
 	}
 	connect();
 
@@ -477,7 +553,23 @@
 			"value": "preview"
 		};
 		ws.send(JSON.stringify(rpc_data));
-		document.getElementById("pic").src = "../../camera/images/camera_calibrater.webp?" + Date.now()
+		
+		const imgElement = document.getElementById("pic");
+		const placeholder = document.getElementById("image-placeholder");
+		
+		imgElement.src = "../../camera/images/camera_calibrater.webp?" + Date.now();
+		
+		// 图片加载成功时显示图片并隐藏占位符
+		imgElement.onload = function() {
+			placeholder.style.display = "none";
+			imgElement.style.display = "block";
+		};
+		
+		// 图片加载失败时显示占位符并隐藏图片
+		imgElement.onerror = function() {
+			placeholder.style.display = "flex";
+			imgElement.style.display = "none";
+		};
 	}
 	setInterval(() => {
 		preview();

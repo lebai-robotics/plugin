@@ -3,201 +3,291 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>AprilTag配置</title>
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<h2>使用camera_calibrater插件完成标定后，才能使用本插件</h2>
-	<div>
-		tag_family<br>
-		<select id="tag_family">
-			<option value="tag16h5">tag16h5</option>
-			<option value="tag25h9">tag25h9</option>
-			<option value="tag36h11" selected>tag36h11</option>
-		</select>
-		<br>
-		tag_size(单位m)<br>
-		<input type="text" id="tag_size">
-		<br>
-		<span>
-			<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked />
-			<label for="signal">使用信号量读取标签位置</label>
-		</span>
-		<span>
-			<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" />
-			<label for="modbus">使用Modbus读取标签位置</label>
-		</span>
-		<br/>
-		<div id="tab_signal">
-			signal<br>
-			<input type="text" id="signal_id">
-			<br>
+	<div class="container">
+		<div class="header">
+			<h2>AprilTag配置</h2>
 		</div>
-		<div id="tab_modbus" style="display: none;">
-			modbus_address<br>
-			<input type="text" id="modbus_address">
-			<br>
-			modbus_salve_id<br>
-			<input type="text" id="modbus_id">
-			<br>
+		
+		<div class="alert">
+			使用camera_calibrater插件完成标定后，才能使用本插件
 		</div>
-		<hr>
+
+		<div class="img-container">
+			<img src="" id="pic" class="img-preview" onerror="this.classList.add('hidden'); document.getElementById('img-placeholder').classList.remove('hidden');">
+			<div id="img-placeholder" class="img-placeholder hidden">图像加载中...</div>
+		</div>
+		
+		<div class="form-container">
+			<div class="form-group">
+				<label class="form-label" for="tag_family">tag_family</label>
+				<select id="tag_family" class="form-control">
+					<option value="tag16h5">tag16h5</option>
+					<option value="tag25h9">tag25h9</option>
+					<option value="tag36h11" selected>tag36h11</option>
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<label class="form-label" for="tag_size">tag_size(单位m)</label>
+				<input type="text" id="tag_size" class="form-control">
+			</div>
+			
+			<div class="form-group">
+				<div class="radio-group">
+					<label class="radio-label">
+						<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked class="radio-input" />
+						<span>使用信号量读取标签位置</span>
+					</label>
+					<label class="radio-label">
+						<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" class="radio-input" />
+						<span>使用Modbus读取标签位置</span>
+					</label>
+				</div>
+			</div>
+			
+			<div id="tab_signal" class="tab-content">
+				<div class="form-group">
+					<label class="form-label" for="signal_id">signal</label>
+					<input type="text" id="signal_id" class="form-control">
+				</div>
+			</div>
+			
+			<div id="tab_modbus" class="tab-content" style="display: none;">
+				<div class="form-group">
+					<label class="form-label" for="modbus_address">modbus_address</label>
+					<input type="text" id="modbus_address" class="form-control">
+				</div>
+				<div class="form-group">
+					<label class="form-label" for="modbus_id">modbus_salve_id</label>
+					<input type="text" id="modbus_id" class="form-control">
+				</div>
+			</div>
+			
+			<div class="divider"></div>
+			
+			<div class="btn-group">
+				<button onclick="save()" class="btn btn-primary">保存参数</button>
+				<button onclick="get()" class="btn btn-secondary">刷新参数</button>
+			</div>
+			
+			<div class="divider"></div>
+			
+			<div class="btn-group">
+				<button onclick="find_tag()" class="btn btn-success">识别</button>
+			</div>
+			
+			<div class="result-container">
+				<textarea id="tags" rows="6" disabled class="result-box"></textarea>
+			</div>
+
+		</div>
 	</div>
-	<button onclick="save()">保存参数</button>
-	<button onclick="get()">刷新参数</button>
-	<br>
-	<hr>
-	<br>
-	<button onclick="find_tag()">识别</button>
-	<br>
-	<textarea id="tags" rows="6" disabled style="width:80%;"></textarea>
-	<br>
-	<img src="" id="pic">
-</body>
-
-<script>
-	function switchTab(tab) {
-		if (tab == "modbus") {
-			document.getElementById("tab_signal").style.display = "none";
-			document.getElementById("tab_modbus").style.display = "inline";
-		} else {
-			document.getElementById("tab_signal").style.display = "inline";
-			document.getElementById("tab_modbus").style.display = "none";
-		}
-	}
-	var ws;
-	var rpc_data = {
-		"jsonrpc": "2.0",
-		"method": "",
-		"params": [],
-		"id": 2
-	};
-	function save() {
-		rpc_data.id = 10;
-		rpc_data.method = "set_item";
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_family",
-			"value": document.getElementById("tag_family").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_size",
-			"value": document.getElementById("tag_size").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_signal",
-			"value": document.getElementById("signal_id").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_address",
-			"value": document.getElementById("modbus_address").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_id",
-			"value": document.getElementById("modbus_id").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-	}
-	function find_tag() {
-		rpc_data.id = 1;
-		rpc_data.method = "set_signal";
-		rpc_data.params[0] = {
-			"key": Number(document.getElementById("signal_id").value),
-			"value": 1
-		};
-		ws.send(JSON.stringify(rpc_data));
-		setTimeout(
-			() => {
-				rpc_data.method = "get_item";
-				rpc_data.id = 60;
-				rpc_data.params[0] = {
-					"key": "plugin_apriltag_tags",
-				};
-				ws.send(JSON.stringify(rpc_data));
-
-			}, 5000
-		)
-	}
-	function get() {
-		rpc_data.method = "get_item";
-		rpc_data.id = 41;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_family",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 42;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_size",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 51;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_signal",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 55;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_address",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 56;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_id",
-		};
-		ws.send(JSON.stringify(rpc_data));
-	}
-
-	function connect() {
-		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
-
-		ws.onopen = () => {
-			console.log("open ws");
-			get();
-		};
-		ws.onmessage = (data) => {
-			var msg = JSON.parse(data.data);
-			if (msg.error) {
-				console.log(msg.error);
+	
+	<script src="toast.js"></script>
+	<script>
+		function switchTab(tab) {
+			if (tab == "modbus") {
+				document.getElementById("tab_signal").style.display = "none";
+				document.getElementById("tab_modbus").style.display = "block";
 			} else {
-				var id = msg.id;
-				var value = msg.result.value;
-				if (value === undefined) {
-					return;
-				}
-				if (id == 41) {
-					document.getElementById("tag_family").value = value || "tag36h11";
-				}
-				if (id == 42) {
-					document.getElementById("tag_size").value = value || "0.04";
-				}
-				if (id == 51) {
-					document.getElementById("signal_id").value = value || "13";
-				}
-				if (id == 55) {
-					document.getElementById("modbus_address").value = value || "";
-				}
-				if (id == 56) {
-					document.getElementById("modbus_id").value = value || "7";
-				}
-				if (id == 60) {
-					document.getElementById("tags").value = value || "";
-				}
+				document.getElementById("tab_signal").style.display = "block";
+				document.getElementById("tab_modbus").style.display = "none";
 			}
 		}
-	}
-	connect();
-
-	setInterval(() => {
-		if (ws.readyState == ws.CLOSED) {
-			connect();
+		
+		var ws;
+		var rpc_data = {
+			"jsonrpc": "2.0",
+			"method": "",
+			"params": [],
+			"id": 2
+		};
+		
+		function save() {
+			rpc_data.id = 10;
+			rpc_data.method = "set_item";
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_tag_family",
+				"value": document.getElementById("tag_family").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_tag_size",
+				"value": document.getElementById("tag_size").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_signal",
+				"value": document.getElementById("signal_id").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_modbus_address",
+				"value": document.getElementById("modbus_address").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_id",
+				"value": document.getElementById("modbus_id").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			toast.success("参数保存成功");
 		}
-	}, 1000);
-	setInterval(() => {
-		document.getElementById("pic").src = "../../camera/images/apriltag.jpg?" + Date.now()
-	}, 5000);
-</script>
+		
+		function find_tag() {
+			rpc_data.id = 1;
+			rpc_data.method = "set_signal";
+			rpc_data.params[0] = {
+				"key": Number(document.getElementById("signal_id").value),
+				"value": 1
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			toast.info("正在识别标签...");
+			
+			setTimeout(
+				() => {
+					rpc_data.method = "get_item";
+					rpc_data.id = 60;
+					rpc_data.params[0] = {
+						"key": "plugin_apriltag_tags",
+					};
+					ws.send(JSON.stringify(rpc_data));
+				}, 5000
+			)
+		}
+		
+		function get() {
+			rpc_data.method = "get_item";
+			rpc_data.id = 41;
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_tag_family",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 42;
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_tag_size",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 51;
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_signal",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 55;
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_modbus_address",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 56;
+			rpc_data.params[0] = {
+				"key": "plugin_apriltag_modbus_id",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			toast.info("刷新参数成功");
+		}
+
+		function connect() {
+			ws = new WebSocket("ws://" + window.location.hostname + ":3030");
+
+			ws.onopen = () => {
+				console.log("open ws");
+				get();
+				toast.success("连接成功");
+			};
+			
+			ws.onmessage = (data) => {
+				var msg = JSON.parse(data.data);
+				if (msg.error) {
+					console.log(msg.error);
+					toast.error("操作失败: " + msg.error.message);
+				} else {
+					var id = msg.id;
+					var value = msg.result.value;
+					if (value === undefined) {
+						return;
+					}
+					if (id == 41) {
+						document.getElementById("tag_family").value = value || "tag36h11";
+					}
+					if (id == 42) {
+						document.getElementById("tag_size").value = value || "0.04";
+					}
+					if (id == 51) {
+						document.getElementById("signal_id").value = value || "13";
+					}
+					if (id == 55) {
+						document.getElementById("modbus_address").value = value || "";
+					}
+					if (id == 56) {
+						document.getElementById("modbus_id").value = value || "7";
+					}
+					if (id == 60) {
+						document.getElementById("tags").value = value || "";
+						if (value) {
+							toast.success("识别标签成功");
+						} else {
+							toast.warning("没有识别到标签");
+						}
+					}
+				}
+			}
+			
+			ws.onerror = () => {
+				toast.error("连接失败，请检查网络");
+			};
+			
+			ws.onclose = () => {
+				console.log("连接已关闭");
+			};
+		}
+		
+		// 初始化连接
+		connect();
+
+		// 检查连接状态
+		setInterval(() => {
+			if (ws.readyState == ws.CLOSED) {
+				connect();
+			}
+		}, 1000);
+		
+		// 更新图像
+		setInterval(() => {
+			const pic = document.getElementById("pic");
+			const placeholder = document.getElementById("img-placeholder");
+			pic.src = "../../camera/images/apriltag.jpg?" + Date.now();
+			
+			pic.onload = function() {
+				pic.classList.remove("hidden");
+				placeholder.classList.add("hidden");
+			};
+			
+			pic.onerror = function() {
+				pic.classList.add("hidden");
+				placeholder.classList.remove("hidden");
+			};
+		}, 5000);
+		
+		// 添加CSS类
+		document.addEventListener("DOMContentLoaded", function() {
+			document.body.classList.add("loaded");
+		});
+	</script>
+	
+	<style>
+		.hidden {
+			display: none !important;
+		}
+	</style>
+</body>
 
 </html>

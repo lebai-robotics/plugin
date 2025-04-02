@@ -3,155 +3,204 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>modbus配置</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Modbus配置</title>
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-	<form>
-		串口号<br>
-		<input type="number" id="serial">
-		<br>
-		波特率<br>
-		<input type="text" id="baud_rate">
-		<br>
-		从站ID<br>
-		<input type="text" id="salve_id">
-		<br>
-		手臂环境<br>
-		<select id="simu">
-			<option value="false" selected>真机环境</option>
-			<option value="true">仿真环境</option>
-		</select>
-		<br>
-	</form>
-	<button onclick="save()">保存参数</button>
-	<button onclick="get()">刷新参数</button>
-	<br>
-</body>
+	<div class="container">
+		<div class="header">
+			<h2>Modbus RTU 从站配置</h2>
+		</div>
+		
+		<div class="form-container">
+			<div class="form-group">
+				<label class="form-label" for="serial">串口号</label>
+				<input type="number" id="serial" class="form-control">
+			</div>
+			
+			<div class="form-group">
+				<label class="form-label" for="baud_rate">波特率</label>
+				<input type="text" id="baud_rate" class="form-control">
+			</div>
+			
+			<div class="form-group">
+				<label class="form-label" for="salve_id">从站ID</label>
+				<input type="text" id="salve_id" class="form-control">
+			</div>
+			
+			<div class="form-group">
+				<label class="form-label" for="simu">手臂环境</label>
+				<select id="simu" class="form-control">
+					<option value="false" selected>真机环境</option>
+					<option value="true">仿真环境</option>
+				</select>
+			</div>
+			
+			<div class="divider"></div>
+			
+			<div class="btn-group">
+				<button onclick="save()" class="btn btn-primary">保存参数</button>
+				<button onclick="get()" class="btn btn-secondary">刷新参数</button>
+			</div>
+		</div>
+	</div>
+	
+	<script src="toast.js"></script>
+	<script>
+		var ws;
+		var rpc_data = {
+			"jsonrpc": "2.0",
+			"method": "",
+			"params": [],
+			"id": 2
+		};
+		function save() {
+			rpc_data.id = 10;
+			rpc_data.method = "set_item";
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_serial",
+				"value": document.getElementById("serial").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_baud_rate",
+				"value": document.getElementById("baud_rate").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_salve_id",
+				"value": document.getElementById("salve_id").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_simu",
+				"value": document.getElementById("simu").value
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			toast.info("正在保存并重启服务...");
 
-<script>
-	var ws;
-	var rpc_data = {
-		"jsonrpc": "2.0",
-		"method": "",
-		"params": [],
-		"id": 2
-	};
-	function save() {
-		rpc_data.id = 10;
-		rpc_data.method = "set_item";
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_serial",
-			"value": document.getElementById("serial").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_baud_rate",
-			"value": document.getElementById("baud_rate").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_salve_id",
-			"value": document.getElementById("salve_id").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_simu",
-			"value": document.getElementById("simu").value
-		};
-		ws.send(JSON.stringify(rpc_data));
+			rpc_data.method = "restart_plugin_daemon";
+			rpc_data.params[0] = {
+				"name": "modbus_rtu_slave",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			// 显示保存成功消息
+			setTimeout(() => {
+				toast.success("参数保存成功，服务已重启");
+			}, 1000);
+		}
+		
+		function get() {
+			rpc_data.method = "get_box_devices";
+			rpc_data.id = 40;
+			rpc_data.params[0] = {
+				"prefix": "ttyS",
+			};
+			ws.send(JSON.stringify(rpc_data));
 
-		rpc_data.method = "restart_plugin_daemon";
-		rpc_data.params[0] = {
-			"name": "modbus_rtu_slave",
-		};
-		ws.send(JSON.stringify(rpc_data));
-	}
-	function get() {
-		rpc_data.method = "get_box_devices";
-		rpc_data.id = 40;
-		rpc_data.params[0] = {
-			"prefix": "ttyS",
-		};
-		ws.send(JSON.stringify(rpc_data));
+			rpc_data.method = "get_item";
+			rpc_data.id = 41;
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_serial",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 42;
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_baud_rate",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 51;
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_salve_id",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			rpc_data.id = 61;
+			rpc_data.params[0] = {
+				"key": "plugin_modbus_rtu_slave_simu",
+			};
+			ws.send(JSON.stringify(rpc_data));
+			
+			toast.success("刷新参数成功");
+		}
 
-		rpc_data.method = "get_item";
-		rpc_data.id = 41;
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_serial",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 42;
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_baud_rate",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 51;
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_salve_id",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 61;
-		rpc_data.params[0] = {
-			"key": "plugin_modbus_rtu_slave_simu",
-		};
-		ws.send(JSON.stringify(rpc_data));
-	}
+		function connect() {
+			ws = new WebSocket("ws://" + window.location.hostname + ":3030");
 
-	function connect() {
-		ws = new WebSocket("ws://" + window.location.hostname + ":3030");
-
-		ws.onopen = () => {
-			console.log("open ws");
-			get();
-		};
-		ws.onmessage = (data) => {
-			var msg = JSON.parse(data.data);
-			if (msg.error) {
-				console.log(msg.error);
-			} else {
-				var id = msg.id;
-				if (id == 40) {
-					let options = [];
-					let indexs = msg.result.devices;
-					for (const i in indexs) {
-						let selected = indexs[i] == document.getElementById("serial").value ? "selected" : "";
-						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
+			ws.onopen = () => {
+				console.log("open ws");
+				get();
+				toast.success("连接成功");
+			};
+			
+			ws.onmessage = (data) => {
+				var msg = JSON.parse(data.data);
+				if (msg.error) {
+					console.log(msg.error);
+					toast.error("发生错误: " + msg.error.message);
+				} else {
+					var id = msg.id;
+					if (id == 40) {
+						let options = [];
+						let indexs = msg.result.devices;
+						for (const i in indexs) {
+							let selected = indexs[i] == document.getElementById("serial").value ? "selected" : "";
+							options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
+						}
+						if (options.length == 0) {
+							document.getElementById("serial").outerHTML = `<input type="number" id="serial" class="form-control">`;
+						} else {
+							document.getElementById("serial").outerHTML = `<select id="serial" class="form-control"></select>`;
+							document.getElementById("serial").innerHTML = options;
+						}
 					}
-					if (options.length == 0) {
-						document.getElementById("serial").outerHTML = `<input type="number" id="serial">`;
-					} else {
-						document.getElementById("serial").outerHTML = `<select id="serial"></select>`;
-						document.getElementById("serial").innerHTML = options;
-					}
-				}
 
-				var value = msg.result.value;
-				if (value === undefined) {
-					return;
-				}
-				if (id == 41) {
-					document.getElementById("serial").value = value || "1";
-				}
-				if (id == 42) {
-					document.getElementById("baud_rate").value = value || "115200";
-				}
-				if (id == 51) {
-					document.getElementById("salve_id").value = value || "30";
-				}
-				if (id == 61) {
-					document.getElementById("simu").value = value || "false";
+					var value = msg.result.value;
+					if (value === undefined) {
+						return;
+					}
+					if (id == 41) {
+						document.getElementById("serial").value = value || "1";
+					}
+					if (id == 42) {
+						document.getElementById("baud_rate").value = value || "115200";
+					}
+					if (id == 51) {
+						document.getElementById("salve_id").value = value || "30";
+					}
+					if (id == 61) {
+						document.getElementById("simu").value = value || "false";
+					}
 				}
 			}
+			
+			ws.onerror = () => {
+				toast.error("连接失败，请检查网络");
+			};
+			
+			ws.onclose = () => {
+				console.log("连接已关闭");
+			};
 		}
-	}
-	connect();
+		
+		// 初始化连接
+		connect();
 
-	setInterval(() => {
-		if (ws.readyState == ws.CLOSED) {
-			connect();
-		}
-	}, 1000);
-</script>
+		// 检查连接状态
+		setInterval(() => {
+			if (ws.readyState == ws.CLOSED) {
+				connect();
+			}
+		}, 1000);
+		
+		// 添加CSS类
+		document.addEventListener("DOMContentLoaded", function() {
+			document.body.classList.add("loaded");
+		});
+	</script>
+</body>
 
 </html>
