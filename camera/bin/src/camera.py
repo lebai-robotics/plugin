@@ -82,15 +82,19 @@ def main():
         if not cmd or cmd == "":
             continue
         if cmd == "shoot":
-            frame = cap.getImage()
+            frame, depth = cap.getImage()
             if frame is None:
                 break
             frame = cv2.GaussianBlur(frame, (5, 5), 0)
             flip = get_flip()
             if flip in [0, 1, -1]:
                 frame = cv2.flip(frame, flip)
+                frame = cv2.flip(depth, flip)
             cv2.imwrite(os.path.join(images_dir, "img.tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
             shutil.move(os.path.join(images_dir, "img.tmp.jpg"), os.path.join(images_dir, "img.jpg"))
+            if depth:
+                cv2.imwrite(os.path.join(images_dir, "depth.tmp.png"), depth)
+                shutil.move(os.path.join(images_dir, "depth.tmp.png"), os.path.join(images_dir, "depth.png"))
             # cv2.imwrite(os.path.join(images_dir, "img.tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
             # shutil.move(os.path.join(images_dir, "img.tmp.webp"), os.path.join(images_dir, "img.webp"))
         if cmd == "reinit":

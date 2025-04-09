@@ -133,7 +133,7 @@
 			};
 			ws.send(JSON.stringify(rpc_data));
 			rpc_data.params[0] = {
-				"key": "plugin_apriltag_id",
+				"key": "plugin_apriltag_modbus_id",
 				"value": document.getElementById("modbus_id").value
 			};
 			ws.send(JSON.stringify(rpc_data));

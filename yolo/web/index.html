@@ -3,28 +3,21 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>AprilTag配置</title>
+	<title>yolo11配置</title>
 </head>
 
 <body>
 	<h2>使用camera_calibrater插件完成标定后，才能使用本插件</h2>
 	<div>
-		tag_family<br>
-		<select id="tag_family">
-			<option value="tag16h5">tag16h5</option>
-			<option value="tag25h9">tag25h9</option>
-			<option value="tag36h11" selected>tag36h11</option>
-		</select>
-		<br>
-		tag_size(单位m)<br>
-		<input type="text" id="tag_size">
+		模型<br>
+		<input type="text" id="model">
 		<br>
 		<span>
-			<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked />
+			<input type="radio" name="yolo_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked />
 			<label for="signal">使用信号量读取标签位置</label>
 		</span>
 		<span>
-			<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" />
+			<input type="radio" name="yolo_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" />
 			<label for="modbus">使用Modbus读取标签位置</label>
 		</span>
 		<br/>
@@ -76,27 +69,22 @@
 		rpc_data.id = 10;
 		rpc_data.method = "set_item";
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_family",
-			"value": document.getElementById("tag_family").value
+			"key": "plugin_yolo_model",
+			"value": document.getElementById("model").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_size",
-			"value": document.getElementById("tag_size").value
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_signal",
+			"key": "plugin_yolo_signal",
 			"value": document.getElementById("signal_id").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_address",
+			"key": "plugin_yolo_modbus_address",
 			"value": document.getElementById("modbus_address").value
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_id",
+			"key": "plugin_yolo_modbus_id",
 			"value": document.getElementById("modbus_id").value
 		};
 		ws.send(JSON.stringify(rpc_data));
@@ -114,7 +102,7 @@
 				rpc_data.method = "get_item";
 				rpc_data.id = 60;
 				rpc_data.params[0] = {
-					"key": "plugin_apriltag_tags",
+					"key": "plugin_yolo_tags",
 				};
 				ws.send(JSON.stringify(rpc_data));
 
@@ -125,27 +113,22 @@
 		rpc_data.method = "get_item";
 		rpc_data.id = 41;
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_family",
-		};
-		ws.send(JSON.stringify(rpc_data));
-		rpc_data.id = 42;
-		rpc_data.params[0] = {
-			"key": "plugin_apriltag_tag_size",
+			"key": "plugin_yolo_model",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 51;
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_signal",
+			"key": "plugin_yolo_signal",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 55;
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_address",
+			"key": "plugin_yolo_modbus_address",
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 56;
 		rpc_data.params[0] = {
-			"key": "plugin_apriltag_modbus_id",
+			"key": "plugin_yolo_modbus_id",
 		};
 		ws.send(JSON.stringify(rpc_data));
 	}
@@ -168,19 +151,16 @@
 					return;
 				}
 				if (id == 41) {
-					document.getElementById("tag_family").value = value || "tag36h11";
-				}
-				if (id == 42) {
-					document.getElementById("tag_size").value = value || "0.04";
+					document.getElementById("model").value = value || "yolo11n.pt";
 				}
 				if (id == 51) {
-					document.getElementById("signal_id").value = value || "13";
+					document.getElementById("signal_id").value = value || "14";
 				}
 				if (id == 55) {
 					document.getElementById("modbus_address").value = value || "";
 				}
 				if (id == 56) {
-					document.getElementById("modbus_id").value = value || "7";
+					document.getElementById("modbus_id").value = value || "8";
 				}
 				if (id == 60) {
 					document.getElementById("tags").value = value || "";
@@ -196,7 +176,7 @@
 		}
 	}, 1000);
 	setInterval(() => {
-		document.getElementById("pic").src = "../../camera/images/apriltag.jpg?" + Date.now()
+		document.getElementById("pic").src = "../../camera/images/yolo.jpg?" + Date.now()
 	}, 5000);
 </script>
 

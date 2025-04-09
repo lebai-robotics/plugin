@@ -19,6 +19,7 @@ class Camera(object):
             try:
                 pipeline = rs.pipeline()
                 config = rs.config()
+                config.enable_stream(rs.stream.depth, capW, capH, rs.format.z16, fps)
                 config.enable_stream(rs.stream.color, capW, capH, rs.format.bgr8, fps)
                 pipe_profile = pipeline.start(config)
                 self.camera = pipeline
@@ -42,6 +43,7 @@ class Camera(object):
 
     def getImage(self):
         img_color = None
+        img_depth = None
         if self.kind == "cv":
             try:
                 self.camera.read()
@@ -52,12 +54,16 @@ class Camera(object):
                 pass
         if self.kind == "rs":
             try:
+                rs.align(rs.stream.color)
                 frames = self.camera.wait_for_frames()
+                rs.align(rs.stream.color).process(frames)
+                depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
                 img_color = np.asanyarray(color_frame.get_data())
+                img_depth = np.asanyarray(color_frame.get_data())
             except:
                 pass
-        return img_color
+        return img_color, img_depth
 
     def release(self):
         if not self.isOpened():
