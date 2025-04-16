@@ -87,7 +87,7 @@
 				<button onclick="save()" class="btn btn-primary">保存参数</button>
 				<button onclick="get()" class="btn btn-secondary">刷新参数</button>
 			</div>
-			
+
 			<div id="robot_ctl" style="display: none;" class="button-group">
 				<button onclick="start_teach_mode()" class="btn btn-secondary">启动示教模式</button>
 				<button onclick="end_teach_mode()" class="btn btn-secondary">退出示教模式</button>
@@ -100,32 +100,33 @@
 			<div class="image-placeholder" id="image-placeholder">
 				<svg class="placeholder-icon" width="96" height="96" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<!-- 相机主体 -->
-					<path class="camera-body" d="M20 5h-3.17L15.5 3.12c-.39-.39-1.03-.88-1.4-.88h-4.2c-.37 0-1.01.49-1.4.88L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
-					
+					<path class="camera-body"
+						d="M20 5h-3.17L15.5 3.12c-.39-.39-1.03-.88-1.4-.88h-4.2c-.37 0-1.01.49-1.4.88L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z" />
+
 					<!-- 镜头光圈 -->
-					<circle class="camera-lens-outer" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.5"/>
-					
+					<circle class="camera-lens-outer" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.5" />
+
 					<!-- 镜头内部 -->
-					<circle class="camera-lens" cx="12" cy="12" r="3.5"/>
-					
+					<circle class="camera-lens" cx="12" cy="12" r="3.5" />
+
 					<!-- 闪光灯 -->
-					<circle class="camera-flash" cx="7" cy="8" r="1"/>
+					<circle class="camera-flash" cx="7" cy="8" r="1" />
 				</svg>
 				<p>等待摄像头图像...</p>
 			</div>
 			<img src="" id="pic" class="main-image">
-			
+
 			<div class="button-group">
 				<button onclick="record()" id="record" class="btn btn-primary">记录点位</button>
 				<button onclick="clear_data()" class="btn btn-danger">清除所有点位</button>
 				<button onclick="calibrate()" class="btn btn-success">标定</button>
 			</div>
-			
+
 			<p class="hint-text">采集15~30张不同位置的图片后再点击"标定"</p>
 			<p class="warning-text">注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。</p>
 		</div>
 	</div>
-	
+
 	<div class="results-section">
 		<h2>标定结果</h2>
 		<div class="form-group">
@@ -141,7 +142,7 @@
 			<textarea id="data" rows="3" disabled class="form-control"></textarea>
 		</div>
 	</div>
-	
+
 	<div class="thumbnails-section">
 		<img src="" id="pic9" class="thumbnail">
 		<img src="" id="pic8" class="thumbnail">
@@ -153,7 +154,7 @@
 		<img src="" id="pic2" class="thumbnail">
 		<img src="" id="pic1" class="thumbnail">
 	</div>
-	
+
 	<div id="toast" class="toast"></div>
 </body>
 
@@ -167,7 +168,7 @@
 			toast.className = "toast";
 		}, 3000);
 	}
-	
+
 	function use_calibrate(way) {
 		if (way == "hand") {
 			if (document.getElementById("matrix").value.length < 10 || document.getElementById("dist_coeffs").value.length < 10) {
@@ -258,7 +259,7 @@
 			"value": document.getElementById("tag_id").value
 		};
 		ws.send(JSON.stringify(rpc_data));
-		
+
 		showToast("参数保存成功", "success");
 	}
 	function get() {
@@ -348,7 +349,7 @@
 			"key": "plugin_camera_calibrater_data",
 		};
 		ws.send(JSON.stringify(rpc_data));
-		
+
 		showToast("正在刷新参数...", "");
 	}
 
@@ -434,7 +435,7 @@
 				refresh_img();
 				showToast("操作完成", "success");
 			}
-		}, 1000);
+		}, 2000);
 	}
 	function refresh_img() {
 		document.getElementById("pic1").src = "../../camera/images/camera_calibrater.1.webp?" + Date.now();
@@ -528,11 +529,11 @@
 				}
 			}
 		}
-		
+
 		ws.onerror = () => {
 			showToast("连接错误，请检查网络", "error");
 		};
-		
+
 		ws.onclose = () => {
 			showToast("连接已断开，正在重连...", "error");
 		};
@@ -553,20 +554,20 @@
 			"value": "preview"
 		};
 		ws.send(JSON.stringify(rpc_data));
-		
+
 		const imgElement = document.getElementById("pic");
 		const placeholder = document.getElementById("image-placeholder");
-		
+
 		imgElement.src = "../../camera/images/camera_calibrater.webp?" + Date.now();
-		
+
 		// 图片加载成功时显示图片并隐藏占位符
-		imgElement.onload = function() {
+		imgElement.onload = function () {
 			placeholder.style.display = "none";
 			imgElement.style.display = "block";
 		};
-		
+
 		// 图片加载失败时显示占位符并隐藏图片
-		imgElement.onerror = function() {
+		imgElement.onerror = function () {
 			placeholder.style.display = "flex";
 			imgElement.style.display = "none";
 		};

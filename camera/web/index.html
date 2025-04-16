@@ -14,22 +14,23 @@
 			<div class="image-placeholder" id="placeholder">
 				<svg class="placeholder-icon" width="96" height="96" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 					<!-- 相机主体 -->
-					<path class="camera-body" d="M20 5h-3.17L15.5 3.12c-.39-.39-1.03-.88-1.4-.88h-4.2c-.37 0-1.01.49-1.4.88L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
-					
+					<path class="camera-body"
+						d="M20 5h-3.17L15.5 3.12c-.39-.39-1.03-.88-1.4-.88h-4.2c-.37 0-1.01.49-1.4.88L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z" />
+
 					<!-- 镜头光圈 -->
-					<circle class="camera-lens-outer" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.5"/>
-					
+					<circle class="camera-lens-outer" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.5" />
+
 					<!-- 镜头内部 -->
-					<circle class="camera-lens" cx="12" cy="12" r="3.5"/>
-					
+					<circle class="camera-lens" cx="12" cy="12" r="3.5" />
+
 					<!-- 闪光灯 -->
-					<circle class="camera-flash" cx="7" cy="8" r="1"/>
-					
+					<circle class="camera-flash" cx="7" cy="8" r="1" />
+
 					<!-- 取景框 -->
-					<rect class="camera-viewfinder" x="16" y="7" width="2" height="2" rx="0.5"/>
-					
+					<rect class="camera-viewfinder" x="16" y="7" width="2" height="2" rx="0.5" />
+
 					<!-- 相机按钮 -->
-					<circle class="camera-button" cx="20" cy="10" r="0.8"/>
+					<circle class="camera-button" cx="20" cy="10" r="0.8" />
 				</svg>
 				<p>等待摄像头图像...</p>
 			</div>
@@ -199,27 +200,27 @@
 			"value": "shoot"
 		};
 		ws.send(JSON.stringify(rpc_data));
-		
+
 		const imgElement = document.getElementById("pic");
 		const placeholder = document.getElementById("placeholder");
-		
+
 		imgElement.src = "../images/img.jpg?" + Date.now();
-		
+
 		// 图片加载成功时显示图片并隐藏占位符
-		imgElement.onload = function() {
+		imgElement.onload = function () {
 			placeholder.style.display = "none";
 			imgElement.style.display = "block";
 		};
-		
+
 		// 图片加载失败时显示占位符并隐藏图片
-		imgElement.onerror = function() {
+		imgElement.onerror = function () {
 			placeholder.style.display = "flex";
 			imgElement.style.display = "none";
 		};
 	}
 	setInterval(() => {
 		shoot();
-	}, 1000);
+	}, 2000);
 
 	setInterval(() => {
 		if (ws.readyState == ws.CLOSED) {
@@ -228,9 +229,9 @@
 	}, 1000);
 
 	// 添加图像点击放大功能
-	document.getElementById("pic").addEventListener("load", function() {
+	document.getElementById("pic").addEventListener("load", function () {
 		// 图片加载成功后才添加点击事件
-		this.addEventListener("click", function() {
+		this.addEventListener("click", function () {
 			var modal = document.getElementById("imageModal");
 			var modalImg = document.getElementById("modalImg");
 			modal.style.display = "flex";
@@ -238,12 +239,12 @@
 		});
 	});
 
-	document.getElementsByClassName("close-modal")[0].addEventListener("click", function() {
+	document.getElementsByClassName("close-modal")[0].addEventListener("click", function () {
 		document.getElementById("imageModal").style.display = "none";
 	});
 
 	// 点击模态框背景也可以关闭
-	document.getElementById("imageModal").addEventListener("click", function(e) {
+	document.getElementById("imageModal").addEventListener("click", function (e) {
 		if (e.target === this) {
 			this.style.display = "none";
 		}

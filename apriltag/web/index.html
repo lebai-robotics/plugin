@@ -13,16 +13,17 @@
 		<div class="header">
 			<h2>AprilTag配置</h2>
 		</div>
-		
+
 		<div class="alert">
 			使用camera_calibrater插件完成标定后，才能使用本插件
 		</div>
 
 		<div class="img-container">
-			<img src="" id="pic" class="img-preview" onerror="this.classList.add('hidden'); document.getElementById('img-placeholder').classList.remove('hidden');">
+			<img src="" id="pic" class="img-preview"
+				onerror="this.classList.add('hidden'); document.getElementById('img-placeholder').classList.remove('hidden');">
 			<div id="img-placeholder" class="img-placeholder hidden">图像加载中...</div>
 		</div>
-		
+
 		<div class="form-container">
 			<div class="form-group">
 				<label class="form-label" for="tag_family">tag_family</label>
@@ -32,32 +33,34 @@
 					<option value="tag36h11" selected>tag36h11</option>
 				</select>
 			</div>
-			
+
 			<div class="form-group">
 				<label class="form-label" for="tag_size">tag_size(单位m)</label>
 				<input type="text" id="tag_size" class="form-control">
 			</div>
-			
+
 			<div class="form-group">
 				<div class="radio-group">
 					<label class="radio-label">
-						<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked class="radio-input" />
+						<input type="radio" name="apriltag_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked
+							class="radio-input" />
 						<span>使用信号量读取标签位置</span>
 					</label>
 					<label class="radio-label">
-						<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')" class="radio-input" />
+						<input type="radio" name="apriltag_ctl" id="modbus" value="modbus" onclick="switchTab('modbus')"
+							class="radio-input" />
 						<span>使用Modbus读取标签位置</span>
 					</label>
 				</div>
 			</div>
-			
+
 			<div id="tab_signal" class="tab-content">
 				<div class="form-group">
 					<label class="form-label" for="signal_id">signal</label>
 					<input type="text" id="signal_id" class="form-control">
 				</div>
 			</div>
-			
+
 			<div id="tab_modbus" class="tab-content" style="display: none;">
 				<div class="form-group">
 					<label class="form-label" for="modbus_address">modbus_address</label>
@@ -68,27 +71,27 @@
 					<input type="text" id="modbus_id" class="form-control">
 				</div>
 			</div>
-			
+
 			<div class="divider"></div>
-			
+
 			<div class="btn-group">
 				<button onclick="save()" class="btn btn-primary">保存参数</button>
 				<button onclick="get()" class="btn btn-secondary">刷新参数</button>
 			</div>
-			
+
 			<div class="divider"></div>
-			
+
 			<div class="btn-group">
 				<button onclick="find_tag()" class="btn btn-success">识别</button>
 			</div>
-			
+
 			<div class="result-container">
 				<textarea id="tags" rows="6" disabled class="result-box"></textarea>
 			</div>
 
 		</div>
 	</div>
-	
+
 	<script src="toast.js"></script>
 	<script>
 		function switchTab(tab) {
@@ -100,7 +103,7 @@
 				document.getElementById("tab_modbus").style.display = "none";
 			}
 		}
-		
+
 		var ws;
 		var rpc_data = {
 			"jsonrpc": "2.0",
@@ -108,7 +111,7 @@
 			"params": [],
 			"id": 2
 		};
-		
+
 		function save() {
 			rpc_data.id = 10;
 			rpc_data.method = "set_item";
@@ -137,10 +140,10 @@
 				"value": document.getElementById("modbus_id").value
 			};
 			ws.send(JSON.stringify(rpc_data));
-			
+
 			toast.success("参数保存成功");
 		}
-		
+
 		function find_tag() {
 			rpc_data.id = 1;
 			rpc_data.method = "set_signal";
@@ -149,9 +152,9 @@
 				"value": 1
 			};
 			ws.send(JSON.stringify(rpc_data));
-			
+
 			toast.info("正在识别标签...");
-			
+
 			setTimeout(
 				() => {
 					rpc_data.method = "get_item";
@@ -163,7 +166,7 @@
 				}, 5000
 			)
 		}
-		
+
 		function get() {
 			rpc_data.method = "get_item";
 			rpc_data.id = 41;
@@ -191,7 +194,7 @@
 				"key": "plugin_apriltag_modbus_id",
 			};
 			ws.send(JSON.stringify(rpc_data));
-			
+
 			toast.info("刷新参数成功");
 		}
 
@@ -203,7 +206,7 @@
 				get();
 				toast.success("连接成功");
 			};
-			
+
 			ws.onmessage = (data) => {
 				var msg = JSON.parse(data.data);
 				if (msg.error) {
@@ -240,16 +243,16 @@
 					}
 				}
 			}
-			
+
 			ws.onerror = () => {
 				toast.error("连接失败，请检查网络");
 			};
-			
+
 			ws.onclose = () => {
 				console.log("连接已关闭");
 			};
 		}
-		
+
 		// 初始化连接
 		connect();
 
@@ -259,30 +262,30 @@
 				connect();
 			}
 		}, 1000);
-		
+
 		// 更新图像
 		setInterval(() => {
 			const pic = document.getElementById("pic");
 			const placeholder = document.getElementById("img-placeholder");
 			pic.src = "../../camera/images/apriltag.jpg?" + Date.now();
-			
-			pic.onload = function() {
+
+			pic.onload = function () {
 				pic.classList.remove("hidden");
 				placeholder.classList.add("hidden");
 			};
-			
-			pic.onerror = function() {
+
+			pic.onerror = function () {
 				pic.classList.add("hidden");
 				placeholder.classList.remove("hidden");
 			};
 		}, 5000);
-		
+
 		// 添加CSS类
-		document.addEventListener("DOMContentLoaded", function() {
+		document.addEventListener("DOMContentLoaded", function () {
 			document.body.classList.add("loaded");
 		});
 	</script>
-	
+
 	<style>
 		.hidden {
 			display: none !important;
