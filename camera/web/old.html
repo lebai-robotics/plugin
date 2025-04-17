@@ -17,6 +17,9 @@
 		height<br>
 		<input type="number" id="height">
 		<br>
+		fps<br>
+		<input type="number" id="fps">
+		<br>
 		翻转<br>
 		<select id="flip">
 			<option value="-2" selected>不翻转</option>
@@ -58,6 +61,11 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
+			"key": "plugin_camera_fps",
+			"value": document.getElementById("fps").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
 			"key": "plugin_camera_flip",
 			"value": document.getElementById("flip").value
 		};
@@ -91,6 +99,11 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 24;
+		rpc_data.params[0] = {
+			"key": "plugin_camera_fps",
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 25;
 		rpc_data.params[0] = {
 			"key": "plugin_camera_flip",
 		};
@@ -138,6 +151,9 @@
 					document.getElementById("height").value = value || "720";
 				}
 				if (id == 24) {
+					document.getElementById("fps").value = value || "10";
+				}
+				if (id == 25) {
 					document.getElementById("flip").value = value || "-2";
 				}
 			}
@@ -157,7 +173,7 @@
 	}
 	setInterval(() => {
 		shoot();
-	}, 1000);
+	}, 2000);
 
 	setInterval(() => {
 		if (ws.readyState == ws.CLOSED) {

@@ -38,11 +38,15 @@ def search_camera():
     if not height:
         height = "720"
     height = int(height)
+    fps = (lebai.get_item("plugin_camera_fps"))['value']
+    if not fps:
+        fps = "10"
+    fps = int(fps)
 
     camera_list = []
-    for i in range(-1,10):
-        cap = camera.Camera(i, width, height)
-        if cap.isOpened() and (cap.getImage() is not None):
+    for i in range(-1, 20):
+        cap = camera.Camera(i, width, height, fps)
+        if cap.isOpened() and (cap.getImage()[0] is not None):
             camera_list.append(i)
         cap.release()
     lebai.set_item("plugin_camera_indexs", json.dumps(camera_list))
@@ -61,8 +65,12 @@ def init_camera():
     if not height:
         height = "720"
     height = int(height)
+    fps = (lebai.get_item("plugin_camera_fps"))['value']
+    if not fps:
+        fps = "10"
+    fps = int(fps)
 
-    cap = camera.Camera(index, width, height)
+    cap = camera.Camera(index, width, height, fps)
     return cap
 
 def main():
@@ -99,6 +107,7 @@ def main():
             # shutil.move(os.path.join(images_dir, "img.tmp.webp"), os.path.join(images_dir, "img.webp"))
         if cmd == "reinit":
             cap.release()
+            cameras = search_camera()
             cap = init_camera()
         lebai.set_item("plugin_camera_cmd_{}".format(cmd), "")
     exit(2)
