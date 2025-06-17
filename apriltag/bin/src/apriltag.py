@@ -13,8 +13,6 @@ import lebai_sdk
 import utils.rotation as rotation
 import dt_apriltags as apriltag
 
-apriltag.Detector.__del__ = lambda x: None # 解决段错误问题
-
 current_dir = os.path.dirname(os.path.abspath(__file__))
 images_dir = os.path.join(current_dir, "../../../camera/images")
 
