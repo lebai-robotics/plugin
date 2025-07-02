@@ -39,6 +39,8 @@ def shoot_img():
         if not cmd or cmd == "":
             break
 def find_tags():
+    global at_detector_family
+    global at_detector
     shoot_img()
     dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
     dist_coeffs = json.loads(dist_coeffs)
