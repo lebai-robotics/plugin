@@ -18,6 +18,8 @@ images_dir = os.path.join(current_dir, "../../../camera/images")
 
 lebai_sdk.init()
 lebai = lebai_sdk.connect("127.0.0.1", True)
+at_detector_family = None
+at_detector = None
 
 def get_ip():
     val = (lebai.get_item("plugin_camera_calibrater_ip"))['value']
@@ -54,7 +56,9 @@ def find_tags():
         tag_size = "0.04"
     tag_size = float(tag_size)
 
-    at_detector = apriltag.Detector(families=tag_family)
+    if tag_family != at_detector_family or not at_detector:
+        at_detector_family = tag_family
+        at_detector = apriltag.Detector(families=tag_family)
     img = cv2.imread(os.path.join(images_dir, "img.jpg"), cv2.IMREAD_GRAYSCALE)
     img = cv2.undistort(img, np.array(camera_matrix), np.array(dist_coeffs))
     #_, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
