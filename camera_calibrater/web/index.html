@@ -122,8 +122,10 @@
 				<button onclick="calibrate()" class="btn btn-success">标定</button>
 			</div>
 
-			<p class="hint-text">采集15~30张不同位置的图片后再点击"标定"</p>
-			<p class="warning-text">注意：标定板具有方向标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。</p>
+			<p class="warning-text"><b>注意：</b></p>
+			<p class="hint-text" id="notice_camera">移动标定板或手臂，使标定板位于图像的各个角落，在不同位置采集10~20张图片</p>
+			<p class="hint-text" id="notice_hand" style="display: none;">移动手臂，标定板和底座的位置不能动，使标定板位于图像中央，在不同位置采集15~30张图片</p>
+			<p class="warning-text" id="notice_grid">标定板具有方向，标定过程需保证方向一致，倾斜角度超过45度容易翻转方向。</p>
 		</div>
 	</div>
 
@@ -178,10 +180,14 @@
 			document.getElementById("hand_cfg").style.display = "inline";
 			document.getElementById("select_tool").style.display = "inline";
 			document.getElementById("robot_ctl").style.display = "inline";
+			document.getElementById("notice_camera").style.display = "none";
+			document.getElementById("notice_hand").style.display = "inline";
 		} else {
 			document.getElementById("hand_cfg").style.display = "none";
 			document.getElementById("select_tool").style.display = "none";
 			document.getElementById("robot_ctl").style.display = "none";
+			document.getElementById("notice_camera").style.display = "inline";
+			document.getElementById("notice_hand").style.display = "none";
 			use_tool('grid');
 		}
 	}
@@ -193,9 +199,11 @@
 			}
 			document.getElementById("use_apriltag").style.display = "inline";
 			document.getElementById("use_grid").style.display = "none";
+			document.getElementById("notice_grid").style.display = "none";
 		} else {
 			document.getElementById("use_apriltag").style.display = "none";
 			document.getElementById("use_grid").style.display = "inline";
+			document.getElementById("notice_grid").style.display = "inline";
 		}
 	}
 
