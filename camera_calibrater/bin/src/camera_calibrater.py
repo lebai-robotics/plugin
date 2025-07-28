@@ -133,14 +133,17 @@ def main():
                         cv2.drawChessboardCorners(img, (row,col), corners, ret)
             if tool == 'apriltag':
                 tag_family = get_tag_family()
+                tag_id = get_tag_id()
                 at_detector = apriltag.Detector(families=tag_family)
                 gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 tags = at_detector.detect(gray_img)
                 for tag in tags:
+                    cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
+                    if int(tag.tag_id) != tag_id:
+                        continue
                     for corner in tag.corners:
                         cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 0, 3)
                         cv2.line(img, tuple(corner.astype(int)), tuple(tag.center.astype(int)), 255, 1)
-                    cv2.circle(img, tuple(tag.center.astype(int)), 3, 255, 2)
             cv2.imwrite(os.path.join(images_dir, "camera_calibrater.tmp.webp"), img, [cv2.IMWRITE_WEBP_QUALITY, 10])
             shutil.move(os.path.join(images_dir, "camera_calibrater.tmp.webp"), os.path.join(images_dir, "camera_calibrater.webp"))
         if cmd == "record":
