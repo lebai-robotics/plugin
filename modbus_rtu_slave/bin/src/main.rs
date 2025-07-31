@@ -135,9 +135,9 @@ async fn main() {
     let mb_simu = lebai.get_item("plugin_modbus_rtu_slave_simu".into()).await.unwrap().value;
 
     let socket_addr = if mb_simu == "true" {
-        SocketAddrV4::new([127,0,0,1].into(), 3050)
+        SocketAddrV4::new([127, 0, 0, 1].into(), 3050)
     } else {
-        SocketAddrV4::new([127,0,0,1].into(), 3051)
+        SocketAddrV4::new([127, 0, 0, 1].into(), 3051)
     };
     let client = tcp::connect(socket_addr.into()).await.unwrap();
     let slave = Slave(mb_slave_id.parse().unwrap_or(30));
@@ -146,14 +146,16 @@ async fn main() {
         ctx: Arc::new(Mutex::new(client)),
     };
 
-    let serial = format!("/dev/ttyS{}",if mb_serial.is_empty(){"1"}else{&mb_serial});
+    let serial = format!("/dev/ttyS{}", if mb_serial.is_empty() { "1" } else { &mb_serial });
     let server_builder = tokio_serial::new(serial, mb_baud_rate.parse().unwrap_or(115200));
     let mut server_serial = tokio_serial::SerialStream::open(&server_builder).unwrap();
     #[cfg(unix)]
     server_serial.set_exclusive(true).unwrap();
     let server = Server::new(server_serial);
 
-    if let Err(err) = server.serve_forever(service).await {
-        eprintln!("{err}");
+    loop {
+        if let Err(err) = server.serve_forever(service).await {
+            eprintln!("{err}");
+        }
     }
 }
