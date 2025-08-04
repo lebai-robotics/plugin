@@ -97,7 +97,8 @@ def main():
             flip = get_flip()
             if flip in [0, 1, -1]:
                 frame = cv2.flip(frame, flip)
-                frame = cv2.flip(depth, flip)
+                if depth:
+                    depth = cv2.flip(depth, flip)
             cv2.imwrite(os.path.join(images_dir, "img.tmp.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 50])
             shutil.move(os.path.join(images_dir, "img.tmp.jpg"), os.path.join(images_dir, "img.jpg"))
             if depth:
