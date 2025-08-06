@@ -185,7 +185,7 @@ def main():
             lebai.set_item("plugin_camera_calibrater_i", str(0))
         if cmd == "calibrate_camera":
             if get_i() < 9:
-                print("image not enough")
+                print("camera image not enough")
                 lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
             # 标定
@@ -222,6 +222,7 @@ def main():
                 error_points.append(error)
                 mean_error += error
             mean_error = mean_error / len(obj_points)
+            print("camera mean_error:", mean_error)
 
             bad_points = []  #异常坐标
             for i in range(len(obj_points)):
@@ -243,7 +244,7 @@ def main():
             lebai.set_item("plugin_camera_calibrater_i", str(0))
         if cmd == "calibrate_hand":
             if get_i() < 9:
-                print("image not enough")
+                print("hand image not enough")
                 lebai.set_item("plugin_camera_calibrater_cmd_calibrate", "")
                 continue
             dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
@@ -252,6 +253,7 @@ def main():
             camera_matrix = json.loads(camera_matrix)
             # 标定
             end2base = [] # 法兰相对于基座的位姿
+            chess2cam = [] # 棋盘相对于摄像头的位姿
             R_chess2cam = [] # 棋盘相对于摄像头的姿态
             T_chess2cam = [] # 棋盘相对于摄像头的位置
             tool = get_tool()
@@ -281,6 +283,9 @@ def main():
                     RT = np.column_stack(((cv2.Rodrigues(rvec))[0], tvec))
                     R_chess2cam.append(RT[:3, :3])
                     T_chess2cam.append(RT[:3, 3].reshape((3, 1)))
+                    pos = RT[:3, 3].reshape((3, 1))
+                    rot = rotation.rotationMatrixToEulerZyx(RT[:3, :3])
+                    chess2cam.append({"x":pos[0][0],"y":pos[1][0],"z":pos[2][0], "rx":rot[2],"ry":rot[1],"rz":rot[0]})
             if tool == 'apriltag':
                 fx = camera_matrix[0][0]
                 fy = camera_matrix[1][1]
@@ -309,6 +314,7 @@ def main():
                             end2base.append(p)
                             R_chess2cam.append(tag.pose_R)
                             T_chess2cam.append(tag.pose_t)
+                            chess2cam.append(offset)
                             break
             tp = get_type()
             if tp == "inHand":
@@ -319,6 +325,37 @@ def main():
                     p = end2base[i]
                     R_end2base.append(rotation.eulerZyzToRotationMatrix([p["rz"], p["ry"], p["rx"]]))
                     T_end2base.append(np.array([p["x"], p["y"], p["z"]]))
+                R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
+                r = rotation.rotationMatrixToEulerZyx(R)
+                data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
+
+                # 计算投影误差
+                chess2base = []
+                for i in range(len(end2base)):
+                    chess2base.append(lebai.pose_trans(lebai.pose_trans(end2base[i], data), chess2cam[i]))
+                chess = {"x": sum(d['x'] for d in chess2base) / len(chess2base),"y": sum(d['y'] for d in chess2base) / len(chess2base),"z": sum(d['z'] for d in chess2base) / len(chess2base)}
+                mean_error = 0
+                error_points = []  # 坐标误差
+                for i in range(len(end2base)):
+                    error = ((chess2base[i]['x']-chess['x'])**2+(chess2base[i]['y']-chess['y'])**2+(chess2base[i]['z']-chess['z'])**2)**0.5
+                    error_points.append(error)
+                    mean_error += error
+                mean_error = mean_error / len(end2base)
+                print("hand mean_error:", mean_error)
+
+                bad_points = []  #异常坐标
+                for i in range(len(end2base)):
+                    if error_points[i] > max(mean_error, 0.005) * 1.5:
+                        print("remove bad images:", error_points[i])
+                        bad_points.append(i)
+                for i in bad_points[::-1]:
+                    R_end2base.pop(i)
+                    T_end2base.pop(i)
+                    end2base.pop(i)
+                    R_chess2cam.pop(i)
+                    T_chess2cam.pop(i)
+                    chess2cam.pop(i)
+
                 R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
                 r = rotation.rotationMatrixToEulerZyx(R)
                 data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
@@ -335,11 +372,42 @@ def main():
                 R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
                 r = rotation.rotationMatrixToEulerZyx(R)
                 data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
+
+                # 计算投影误差
+                chess2end = []
+                for i in range(len(end2base)):
+                    chess2end.append(lebai.pose_trans(lebai.pose_trans(lebai.pose_inverse(end2base[i]), data), chess2cam[i]))
+                chess = {"x": sum(d['x'] for d in chess2end) / len(chess2end),"y": sum(d['y'] for d in chess2end) / len(chess2end),"z": sum(d['z'] for d in chess2end) / len(chess2end)}
+                mean_error = 0
+                error_points = []  # 坐标误差
+                for i in range(len(end2base)):
+                    error = ((chess2end[i]['x']-chess['x'])**2+(chess2end[i]['y']-chess['y'])**2+(chess2end[i]['z']-chess['z'])**2)**0.5
+                    error_points.append(error)
+                    mean_error += error
+                mean_error = mean_error / len(end2base)
+                print("mean_error:", mean_error)
+
+                bad_points = []  #异常坐标
+                for i in range(len(end2base)):
+                    if error_points[i] > mean_error * 1.5:
+                        print("remove bad images:", error_points[i])
+                        bad_points.append(i)
+                for i in bad_points[::-1]:
+                    R_end2base.pop(i)
+                    T_end2base.pop(i)
+                    end2base.pop(i)
+                    R_chess2cam.pop(i)
+                    T_chess2cam.pop(i)
+                    chess2cam.pop(i)
+
+                R, T = cv2.calibrateHandEye(R_end2base, T_end2base, R_chess2cam, T_chess2cam, cv2.CALIB_HAND_EYE_TSAI)
+                r = rotation.rotationMatrixToEulerZyx(R)
+                data = {"x":T[0][0],"y":T[1][0],"z":T[2][0],"rz":r[0],"ry":r[1],"rx":r[2]}
                 lebai.set_item("plugin_camera_calibrater_data", json.dumps(data))
 
             clear_imgs()
             lebai.set_item("plugin_camera_calibrater_i", str(0))
-        lebai.set_item("plugin_camera_calibrater_cmd_{}".format(cmd), "")
+        lebai.set_item("plugin_camera_calibrater_cmd_{}".format(cmd.partition("_")[0]), "")
 
 if __name__ == '__main__':
     main()

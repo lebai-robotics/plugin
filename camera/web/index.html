@@ -41,7 +41,8 @@
 			<h2>摄像头参数配置</h2>
 			<div class="form-group">
 				<label for="index">摄像头索引 (深度摄像头填 -1)</label>
-				<input type="number" id="index" class="form-control">
+				<input type="text" id="index" list="indexs" class="form-control">
+				<datalist id="indexs"></datalist>
 			</div>
 			<div class="form-group">
 				<label for="width">宽度</label>
@@ -182,12 +183,7 @@
 						let selected = indexs[i] == document.getElementById("index").value ? "selected" : "";
 						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
 					}
-					if (options.length == 0) {
-						document.getElementById("index").outerHTML = `<input type="number" id="index" class="form-control">`;
-					} else {
-						document.getElementById("index").outerHTML = `<select id="index" class="form-control"></select>`;
-						document.getElementById("index").innerHTML = options;
-					}
+					document.getElementById("indexs").innerHTML = options;
 				}
 				if (id == 21) {
 					document.getElementById("index").value = value || "-1";

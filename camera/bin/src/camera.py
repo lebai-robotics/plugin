@@ -56,7 +56,10 @@ def init_camera():
     index = (lebai.get_item("plugin_camera_index"))['value']
     if not index:
         index = "-1"
-    index = int(index)
+    try:
+        index = int(index)
+    except ValueError:
+        pass
     width = (lebai.get_item("plugin_camera_width"))['value']
     if not width:
         width = "1280"

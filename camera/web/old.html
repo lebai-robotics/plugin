@@ -9,7 +9,8 @@
 <body>
 	<form>
 		index(深度摄像头填 -1)<br>
-		<input type="number" id="index">
+		<input type="text" id="index" list="indexs">
+		<datalist id="indexs"></datalist>
 		<br>
 		width<br>
 		<input type="number" id="width">
@@ -134,12 +135,7 @@
 						let selected = indexs[i] == document.getElementById("index").value ? "selected" : "";
 						options.push(`<option value="${indexs[i]}" ${selected}>${indexs[i]}</option>`);
 					}
-					if (options.length == 0) {
-						document.getElementById("index").outerHTML = `<input type="number" id="index">`;
-					} else {
-						document.getElementById("index").outerHTML = `<select id="index"></select>`;
-						document.getElementById("index").innerHTML = options;
-					}
+					document.getElementById("indexs").innerHTML = options;
 				}
 				if (id == 21) {
 					document.getElementById("index").value = value || "-1";
