@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 #./`uname -m`/main
-lpy ./src/main.py
+lpy -u ./src/main.py

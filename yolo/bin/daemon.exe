@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 #./`uname -m`/wait_signal
-lpy ./src/wait_signal.py
+lpy -u ./src/wait_signal.py
