@@ -5,9 +5,9 @@ import numpy as np
 import concurrent.futures
 import cv2
 
-width = 1280
-height = 720
-fps = 10
+width = 640
+height = 480
+fps = 15
 default_index = 0
 
 class Camera(object):
@@ -18,6 +18,9 @@ class Camera(object):
         if index == -1:
             self.kind = "rs"
             try:
+                capW = 640
+                capH = 480
+                fps = 15
                 pipeline = rs.pipeline()
                 config = rs.config()
                 config.enable_stream(rs.stream.depth, capW, capH, rs.format.z16, fps)

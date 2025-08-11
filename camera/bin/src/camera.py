@@ -32,15 +32,15 @@ def get_flip():
 def search_camera():
     width = (lebai.get_item("plugin_camera_width"))['value']
     if not width:
-        width = "1280"
+        width = "640"
     width = int(width)
     height = (lebai.get_item("plugin_camera_height"))['value']
     if not height:
-        height = "720"
+        height = "480"
     height = int(height)
     fps = (lebai.get_item("plugin_camera_fps"))['value']
     if not fps:
-        fps = "10"
+        fps = "15"
     fps = int(fps)
 
     camera_list = []
@@ -62,15 +62,15 @@ def init_camera():
         pass
     width = (lebai.get_item("plugin_camera_width"))['value']
     if not width:
-        width = "1280"
+        width = "640"
     width = int(width)
     height = (lebai.get_item("plugin_camera_height"))['value']
     if not height:
-        height = "720"
+        height = "480"
     height = int(height)
     fps = (lebai.get_item("plugin_camera_fps"))['value']
     if not fps:
-        fps = "10"
+        fps = "15"
     fps = int(fps)
 
     cap = camera.Camera(index, width, height, fps)
