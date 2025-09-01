@@ -1,5 +1,6 @@
 {
   "name": "apriltag",
+  "boxs": ["LA3"],
   "description": "视觉识别apriltag位姿",
   "homepage": "lebai.ltd",
   "auto_restart": true

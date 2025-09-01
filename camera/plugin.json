@@ -1,5 +1,6 @@
 {
   "name": "camera",
+  "boxs": ["LA3"],
   "description": "采集摄像头图片并保存到文件系统",
   "homepage": "lebai.ltd",
   "auto_restart": true

@@ -1,5 +1,6 @@
 {
   "name": "yolo",
+  "boxs": ["LA3"],
   "description": "使用yolo视觉识别物体的位置",
   "homepage": "lebai.ltd",
   "auto_restart": true
