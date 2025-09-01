@@ -7,7 +7,7 @@ import cv2
 
 width = 640
 height = 480
-fps = 15
+fps = 5
 default_index = 0
 
 class Camera(object):
@@ -20,7 +20,7 @@ class Camera(object):
             try:
                 capW = 640
                 capH = 480
-                fps = 15
+                fps = 5
                 pipeline = rs.pipeline()
                 config = rs.config()
                 config.enable_stream(rs.stream.depth, capW, capH, rs.format.z16, fps)

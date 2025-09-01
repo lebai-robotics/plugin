@@ -40,7 +40,7 @@ def search_camera():
     height = int(height)
     fps = (lebai.get_item("plugin_camera_fps"))['value']
     if not fps:
-        fps = "15"
+        fps = "5"
     fps = int(fps)
 
     camera_list = []
@@ -70,7 +70,7 @@ def init_camera():
     height = int(height)
     fps = (lebai.get_item("plugin_camera_fps"))['value']
     if not fps:
-        fps = "15"
+        fps = "5"
     fps = int(fps)
 
     cap = camera.Camera(index, width, height, fps)
