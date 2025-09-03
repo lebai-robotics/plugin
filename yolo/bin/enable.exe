@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 #chmod 755 ./`uname -m`/yolo
-lpip install -r ./src/requirements.txt
+lpip install -r ./src/requirements/my.txt
+lpip install -r ./src/requirements/torch.txt
+lpip install "ultralytics>=8.3.0" --no-deps
+lpip install -r ./src/requirements/ultralytics.txt
