@@ -75,7 +75,7 @@ class Camera(object):
                 depth_frame = frames.get_depth_frame()
                 color_frame = frames.get_color_frame()
                 img_color = np.asanyarray(color_frame.get_data())
-                img_depth = np.asanyarray(color_frame.get_data())
+                img_depth = np.asanyarray(depth_frame.get_data())
             except:
                 pass
         return img_color, img_depth
