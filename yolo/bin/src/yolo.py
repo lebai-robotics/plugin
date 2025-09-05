@@ -62,7 +62,7 @@ def find_tags():
     img = cv2.imread(os.path.join(images_dir, "img.jpg"))
     img = cv2.undistort(img, np.array(camera_matrix), np.array(dist_coeffs))
     depth_img = cv2.imread(os.path.join(images_dir, "depth.png"), cv2.IMREAD_ANYDEPTH)
-    if img.size == 0 or depth_img.size == 0:
+    if img.size == 0:
         exit(2)
     results = model.predict(source=img)
 
@@ -70,6 +70,9 @@ def find_tags():
     for box in results[0].boxes:
         confidence = float(box.conf[0])
         if confidence < 0.6:
+            continue
+        if depth_img is None or depth_img.size == 0:
+            ret.append({"class_id": class_id, "confidence": confidence})
             continue
         class_id = int(box.cls[0])
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
@@ -109,8 +112,10 @@ def find_tags_pose(flange_pose):
     cam2flange = json.loads((lebai.get_item("plugin_camera_calibrater_data"))['value'])
     cam = lebai.pose_trans(flange_pose, cam2flange)
     for tag in tags:
-        tag_pos_offset = {"x":tag["x"], "y":tag["y"], "z":tag["z"], "rz":0, "ry":0, "rx":0}
-        tag_pose = lebai.pose_trans(cam, tag_pos_offset)
+        tag_pose = {}
+        if 'x' in tag:
+            tag_pos_offset = {"x":tag["x"], "y":tag["y"], "z":tag["z"], "rz":0, "ry":0, "rx":0}
+            tag_pose = lebai.pose_trans(cam, tag_pos_offset)
         tag_pose["confidence"] = tag["confidence"]
         ret[str(tag["class_id"])] = tag_pose
     return ret

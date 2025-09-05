@@ -107,6 +107,11 @@ def main():
             if depth is not None:
                 cv2.imwrite(os.path.join(images_dir, "depth.tmp.png"), depth)
                 shutil.move(os.path.join(images_dir, "depth.tmp.png"), os.path.join(images_dir, "depth.png"))
+            else:
+                try:
+                    os.remove(os.path.join(images_dir, "depth.png"))
+                except Exception as e:
+                    pass
             # cv2.imwrite(os.path.join(images_dir, "img.tmp.webp"), frame, [cv2.IMWRITE_WEBP_QUALITY, 50])
             # shutil.move(os.path.join(images_dir, "img.tmp.webp"), os.path.join(images_dir, "img.webp"))
         if cmd == "reinit":
