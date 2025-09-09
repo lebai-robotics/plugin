@@ -68,13 +68,13 @@ def find_tags():
 
     ret = []
     for box in results[0].boxes:
+        class_id = int(box.cls[0])
         confidence = float(box.conf[0])
         if confidence < 0.6:
             continue
         if depth_img is None or depth_img.size == 0:
             ret.append({"class_id": class_id, "confidence": confidence})
             continue
-        class_id = int(box.cls[0])
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
         center_x = int((x1 + x2) / 2)
         center_y = int((y1 + y2) / 2)

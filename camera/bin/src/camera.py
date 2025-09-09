@@ -83,6 +83,12 @@ def main():
         if len(cameras) == 1:
             lebai.set_item("plugin_camera_index", str(cameras[0]))
         exit(1)
+    if cap.kind == 'rs':
+        camera_matrix, dist_coeffs = cap.getInfo()
+        if camera_matrix is not None:
+            lebai.set_item("plugin_camera_calibrater_camera_matrix", json.dumps(camera_matrix.tolist()))
+        if dist_coeffs is not None:
+            lebai.set_item("plugin_camera_calibrater_dist_coeffs", json.dumps(dist_coeffs.tolist()))
 
     images_dir = os.path.join(current_dir, "../../images")
     if not os.path.exists(images_dir):

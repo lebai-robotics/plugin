@@ -56,6 +56,22 @@ class Camera(object):
                     except concurrent.futures.TimeoutError:
                         break
 
+    def getInfo(self):
+        if self.kind == "rs":
+            try:
+                pipe_profile = self.camera.get_active_profile()
+                color_profile = pipe_profile.get_stream(rs.stream.color)
+                color_intrinsics = color_profile.as_video_stream_profile().get_intrinsics()
+                camera_matrix = np.array([
+                    [color_intrinsics.fx, 0, color_intrinsics.ppx],
+                    [0, color_intrinsics.fy, color_intrinsics.ppy],
+                    [0, 0, 1]
+                ])
+                dist_coeffs = np.array([color_intrinsics.coeffs])
+                return camera_matrix, dist_coeffs
+            except:
+                pass
+
     def getImage(self):
         img_color = None
         img_depth = None
