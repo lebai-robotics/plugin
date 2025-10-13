@@ -1,0 +1,6 @@
+{
+  "name": "frpc",
+  "description": "远程协助",
+  "homepage": "lebai.ltd",
+  "auto_restart": false
+}
