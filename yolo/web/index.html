@@ -7,10 +7,12 @@
 </head>
 
 <body>
-	<h2>使用camera_calibrater插件完成标定后，才能使用本插件</h2>
 	<div>
 		模型<br>
 		<input type="text" id="model">
+		<br>
+		置信度（低于该置信度的结果不会返回）<br>
+		<input type="number" step="0.1" id="confidence">
 		<br>
 		<span>
 			<input type="radio" name="yolo_ctl" id="signal" value="signal" onclick="switchTab('signal')" checked />
@@ -74,6 +76,11 @@
 		};
 		ws.send(JSON.stringify(rpc_data));
 		rpc_data.params[0] = {
+			"key": "plugin_yolo_confidence",
+			"value": document.getElementById("confidence").value
+		};
+		ws.send(JSON.stringify(rpc_data));
+		rpc_data.params[0] = {
 			"key": "plugin_yolo_signal",
 			"value": document.getElementById("signal_id").value
 		};
@@ -116,6 +123,11 @@
 			"key": "plugin_yolo_model",
 		};
 		ws.send(JSON.stringify(rpc_data));
+		rpc_data.id = 42;
+		rpc_data.params[0] = {
+			"key": "plugin_yolo_confidence",
+		};
+		ws.send(JSON.stringify(rpc_data));
 		rpc_data.id = 51;
 		rpc_data.params[0] = {
 			"key": "plugin_yolo_signal",
@@ -152,6 +164,9 @@
 				}
 				if (id == 41) {
 					document.getElementById("model").value = value || "yolo11n.pt";
+				}
+				if (id == 42) {
+					document.getElementById("confidence").value = value || "0.6";
 				}
 				if (id == 51) {
 					document.getElementById("signal_id").value = value || "14";

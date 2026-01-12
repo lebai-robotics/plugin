@@ -31,6 +31,12 @@ def get_type():
         tp = "inHand"
     return tp
 
+def get_confidence():
+    confidence = (lebai.get_item("plugin_yolo_confidence"))['value']
+    if not confidence:
+        confidence = "0.6"
+    return float(confidence)
+
 def shoot_img():
     lebai.set_item("plugin_camera_cmd_shoot", "shoot")
     while True:
@@ -69,11 +75,12 @@ def find_tags():
         camera_matrix = json.loads(camera_matrix)
 
     results = model.predict(source=img)
+    filter_confidence = get_confidence()
     ret = []
     for box in results[0].boxes:
         class_id = int(box.cls[0])
         confidence = float(box.conf[0])
-        if confidence < 0.6:
+        if confidence < filter_confidence:
             continue
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().astype(int)
         center_x = int((x1 + x2) / 2)
