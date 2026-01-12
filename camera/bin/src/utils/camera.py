@@ -5,16 +5,17 @@ import numpy as np
 import concurrent.futures
 import cv2
 
-width = 640
-height = 480
-fps = 5
+default_width = 640
+default_height = 480
+default_fps = 5
 default_index = 0
 
 class Camera(object):
     kind = None  # 类型
     camera = None  # 摄像头实例
+    idle = 0.008 # 120fps
  
-    def __init__(self, index = default_index, capW = width, capH = height, fps = fps):
+    def __init__(self, index = default_index, capW = default_width, capH = default_height, fps = default_fps):
         if index == -1:
             self.kind = "rs"
             try:
@@ -41,6 +42,7 @@ class Camera(object):
                     self.camera = cap
             except:
                 pass
+        self.idle = min(0.008, 1/fps)
  
     def isOpened(self):
         return self.camera is not None
@@ -51,7 +53,7 @@ class Camera(object):
                 while True:
                     try:
                         future = ex.submit(self.camera.grab)
-                        if not future.result(timeout=0.5/fps):
+                        if not future.result(timeout=0.5*self.idle):
                             break
                     except concurrent.futures.TimeoutError:
                         break
@@ -78,7 +80,7 @@ class Camera(object):
         if self.kind == "cv":
             try:
                 self.clearCache()
-                ret, frame = self.camera.read()
+                ret, frame = self.camera.retrieve()
                 if ret:
                     img_color = frame
             except:
