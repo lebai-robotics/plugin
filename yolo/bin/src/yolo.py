@@ -63,7 +63,9 @@ def find_tags():
         exit(2)
 
     is_depth = True
-    depth_img = cv2.imread(os.path.join(images_dir, "depth.png"), cv2.IMREAD_ANYDEPTH)
+    depth_img = None
+    if os.path.exists(os.path.join(images_dir, "depth.png")):
+        depth_img = cv2.imread(os.path.join(images_dir, "depth.png"), cv2.IMREAD_ANYDEPTH)
     if depth_img is None or depth_img.size == 0:
         is_depth = False
     dist_coeffs = (lebai.get_item("plugin_camera_calibrater_dist_coeffs"))['value']
