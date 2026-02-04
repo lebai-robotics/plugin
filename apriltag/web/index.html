@@ -199,7 +199,7 @@
 		}
 
 		function connect() {
-			ws = new WebSocket("ws://" + window.location.hostname + "/sim/rpc");
+			ws = new WebSocket("ws://" + window.location.host + "/sim/rpc");
 
 			ws.onopen = () => {
 				console.log("open ws");
