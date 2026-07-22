@@ -206,7 +206,7 @@ def main():
                     continue
                 # cv2.find4QuadCornerSubpix(img, corners, (row, col))
                 obj_points.append(cp_world)
-                image_points.append(corners)
+                image_points.append(corners.reshape(-1, 1, 2).astype('float32'))
             # 进行相机标定
             ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(obj_points, image_points, img.shape[::-1], None, None)
             if not ret:
@@ -218,6 +218,7 @@ def main():
             error_points = []  # 坐标误差
             for i in range(len(obj_points)):
                 imgpoints2, _ = cv2.projectPoints(obj_points[i], rvecs[i], tvecs[i], camera_matrix, dist_coeffs)
+                imgpoints2 = imgpoints2.reshape(-1, 1, 2).astype('float32')
                 error = cv2.norm(image_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
                 error_points.append(error)
                 mean_error += error
@@ -276,7 +277,7 @@ def main():
                         continue
                     end2base.append(p)
                     obj_points.append(cp_world)
-                    image_points.append(corners)
+                    image_points.append(corners.reshape(-1, 1, 2).astype('float32'))
                 # 手眼标定
                 for i in range(0,len(image_points)):
                     ret, rvec, tvec = cv2.solvePnP(cp_world, image_points[i], np.array(camera_matrix), distCoeffs=np.array(dist_coeffs))
