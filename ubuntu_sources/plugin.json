@@ -1,0 +1,6 @@
+{
+  "name": "ubuntu_sources",
+  "description": "切换Ubuntu软件源",
+  "homepage": "lebai.ltd",
+  "auto_restart": true
+}

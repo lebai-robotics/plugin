@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+lpy -u ./src/daemon.py

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ubuntu软件源配置</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			background: #f5f5f5;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 600px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			padding: 24px;
+		}
+
+		h1 {
+			font-size: 20px;
+			color: #333;
+			margin-bottom: 20px;
+			padding-bottom: 12px;
+			border-bottom: 1px solid #eee;
+		}
+
+		.info-section {
+			background: #f8f9fa;
+			border-radius: 6px;
+			padding: 16px;
+			margin-bottom: 20px;
+		}
+
+		.info-row {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 8px;
+		}
+
+		.info-row:last-child {
+			margin-bottom: 0;
+		}
+
+		.info-label {
+			color: #666;
+			font-size: 14px;
+		}
+
+		.info-value {
+			color: #333;
+			font-weight: 500;
+			font-size: 14px;
+		}
+
+		.section-title {
+			font-size: 14px;
+			color: #666;
+			margin-bottom: 12px;
+			font-weight: 500;
+		}
+
+		.source-options {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		.source-option {
+			display: flex;
+			align-items: center;
+			padding: 14px 16px;
+			border: 2px solid #e0e0e0;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.source-option:hover {
+			border-color: #4a90d9;
+			background: #f0f7ff;
+		}
+
+		.source-option.selected {
+			border-color: #4a90d9;
+			background: #e8f4fd;
+		}
+
+		.source-option input[type="radio"] {
+			margin-right: 12px;
+			width: 18px;
+			height: 18px;
+			accent-color: #4a90d9;
+		}
+
+		.source-info {
+			flex: 1;
+		}
+
+		.source-name {
+			font-size: 15px;
+			font-weight: 500;
+			color: #333;
+			margin-bottom: 4px;
+		}
+
+		.source-url {
+			font-size: 12px;
+			color: #888;
+			font-family: monospace;
+		}
+
+		.button-group {
+			display: flex;
+			gap: 12px;
+		}
+
+		.btn {
+			flex: 1;
+			padding: 12px 20px;
+			border: none;
+			border-radius: 6px;
+			font-size: 14px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.btn-primary {
+			background: #4a90d9;
+			color: white;
+		}
+
+		.btn-primary:hover {
+			background: #3a7bc8;
+		}
+
+		.btn-primary:disabled {
+			background: #ccc;
+			cursor: not-allowed;
+		}
+
+		.btn-secondary {
+			background: #f0f0f0;
+			color: #333;
+		}
+
+		.btn-secondary:hover {
+			background: #e0e0e0;
+		}
+
+		.toast {
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			padding: 12px 24px;
+			border-radius: 6px;
+			color: white;
+			font-size: 14px;
+			opacity: 0;
+			transition: opacity 0.3s;
+			z-index: 1000;
+		}
+
+		.toast.show {
+			opacity: 1;
+		}
+
+		.toast.success {
+			background: #28a745;
+		}
+
+		.toast.error {
+			background: #dc3545;
+		}
+
+		.toast.info {
+			background: #4a90d9;
+		}
+
+		.status-bar {
+			margin-top: 16px;
+			padding: 12px;
+			background: #f8f9fa;
+			border-radius: 6px;
+			font-size: 13px;
+			color: #666;
+			text-align: center;
+		}
+
+		.status-bar.running {
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		.status-bar.success {
+			background: #d4edda;
+			color: #155724;
+		}
+
+		.status-bar.error {
+			background: #f8d7da;
+			color: #721c24;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Ubuntu 软件源配置</h1>
+
+		<div class="info-section">
+			<div class="info-row">
+				<span class="info-label">Ubuntu 版本</span>
+				<span class="info-value" id="ubuntu_version">检测中...</span>
+			</div>
+			<div class="info-row">
+				<span class="info-label">CPU 架构</span>
+				<span class="info-value" id="cpu_arch">检测中...</span>
+			</div>
+			<div class="info-row">
+				<span class="info-label">当前源</span>
+				<span class="info-value" id="current_source">检测中...</span>
+			</div>
+		</div>
+
+		<div class="section-title">选择软件源</div>
+		<div class="source-options">
+			<label class="source-option selected" onclick="selectSource(this, 'tsinghua')">
+				<input type="radio" name="source" value="tsinghua" checked>
+				<div class="source-info">
+					<div class="source-name">清华大学开源软件镜像站</div>
+					<div class="source-url">mirrors.tuna.tsinghua.edu.cn</div>
+				</div>
+			</label>
+			<label class="source-option" onclick="selectSource(this, 'alibaba')">
+				<input type="radio" name="source" value="alibaba">
+				<div class="source-info">
+					<div class="source-name">阿里云开源镜像站</div>
+					<div class="source-url">mirrors.aliyun.com</div>
+				</div>
+			</label>
+			<label class="source-option" onclick="selectSource(this, 'tencent')">
+				<input type="radio" name="source" value="tencent">
+				<div class="source-info">
+					<div class="source-name">腾讯云开源镜像站</div>
+					<div class="source-url">mirrors.cloud.tencent.com</div>
+				</div>
+			</label>
+			<label class="source-option" onclick="selectSource(this, 'ustc')">
+				<input type="radio" name="source" value="ustc">
+				<div class="source-info">
+					<div class="source-name">中国科学技术大学开源镜像站</div>
+					<div class="source-url">mirrors.ustc.edu.cn</div>
+				</div>
+			</label>
+			<label class="source-option" onclick="selectSource(this, 'sjtu')">
+				<input type="radio" name="source" value="sjtu">
+				<div class="source-info">
+					<div class="source-name">上海交通大学开源镜像站</div>
+					<div class="source-url">mirror.sjtu.edu.cn</div>
+				</div>
+			</label>
+			<label class="source-option" onclick="selectSource(this, 'ubuntu')">
+				<input type="radio" name="source" value="ubuntu">
+				<div class="source-info">
+					<div class="source-name">Ubuntu官方源</div>
+					<div class="source-url">archive.ubuntu.com</div>
+				</div>
+			</label>
+		</div>
+
+		<div class="button-group">
+			<button class="btn btn-primary" id="applyBtn" onclick="applySource()">应用源</button>
+			<button class="btn btn-secondary" onclick="refreshInfo()">刷新状态</button>
+		</div>
+
+		<div class="status-bar" id="statusBar">就绪</div>
+	</div>
+
+	<div id="toast" class="toast"></div>
+
+	<script>
+		var ws;
+		var selectedSource = "tsinghua";
+		var rpcId = 100;
+		var pendingCallbacks = {};
+
+		var rpc_data = {
+			"jsonrpc": "2.0",
+			"method": "",
+			"params": [],
+			"id": 2
+		};
+
+		function selectSource(el, source) {
+			document.querySelectorAll('.source-option').forEach(function(opt) {
+				opt.classList.remove('selected');
+			});
+			el.classList.add('selected');
+			selectedSource = source;
+		}
+
+		function setItem(key, value) {
+			rpc_data.id = rpcId++;
+			rpc_data.method = "set_item";
+			rpc_data.params[0] = {
+				"key": key,
+				"value": value
+			};
+			ws.send(JSON.stringify(rpc_data));
+		}
+
+		function getItem(key, callback) {
+			var id = rpcId++;
+			pendingCallbacks[id] = callback;
+			rpc_data.id = id;
+			rpc_data.method = "get_item";
+			rpc_data.params[0] = {
+				"key": key
+			};
+			ws.send(JSON.stringify(rpc_data));
+		}
+
+		function applySource() {
+			var btn = document.getElementById("applyBtn");
+			btn.disabled = true;
+			btn.textContent = "应用中...";
+			setStatus("正在切换软件源，请稍候...", "running");
+
+			setItem("plugin_ubuntu_sources_cmd", "apply");
+			setItem("plugin_ubuntu_sources_mirror", selectedSource);
+
+			setTimeout(function() {
+				btn.disabled = false;
+				btn.textContent = "应用源";
+			}, 3000);
+		}
+
+		function refreshInfo() {
+			getItem("plugin_ubuntu_sources_version", function(value) {
+				document.getElementById("ubuntu_version").textContent = value || "未检测到";
+			});
+			getItem("plugin_ubuntu_sources_arch", function(value) {
+				document.getElementById("cpu_arch").textContent = value || "未检测到";
+			});
+			getItem("plugin_ubuntu_sources_current", function(value) {
+				document.getElementById("current_source").textContent = value || "未检测到";
+			});
+			getItem("plugin_ubuntu_sources_status", function(value) {
+				if (value) {
+					setStatus(value, value.indexOf("成功") >= 0 ? "success" : (value.indexOf("失败") >= 0 ? "error" : ""));
+				}
+			});
+		}
+
+		function setStatus(text, className) {
+			var bar = document.getElementById("statusBar");
+			bar.textContent = text;
+			bar.className = "status-bar " + (className || "");
+		}
+
+		function showToast(message, type) {
+			var toast = document.getElementById("toast");
+			toast.textContent = message;
+			toast.className = "toast show " + type;
+			setTimeout(function() {
+				toast.className = "toast";
+			}, 3000);
+		}
+
+		function connect() {
+			ws = new WebSocket("ws://" + window.location.host + "/sim/rpc");
+
+			ws.onopen = function() {
+				console.log("open ws");
+				refreshInfo();
+			};
+
+			ws.onmessage = function(data) {
+				var msg = JSON.parse(data.data);
+				if (msg.error) {
+					console.log(msg.error);
+				} else {
+					if (pendingCallbacks[msg.id]) {
+						pendingCallbacks[msg.id](msg.result.value);
+						delete pendingCallbacks[msg.id];
+					}
+				}
+			};
+
+			ws.onclose = function() {
+				console.log("ws closed");
+			};
+		}
+
+		connect();
+
+		setInterval(function() {
+			if (ws.readyState == ws.CLOSED) {
+				connect();
+			}
+		}, 3000);
+
+		setInterval(function() {
+			if (ws.readyState == ws.OPEN) {
+				getItem("plugin_ubuntu_sources_status", function(value) {
+					if (value) {
+						setStatus(value, value.indexOf("成功") >= 0 ? "success" : (value.indexOf("失败") >= 0 ? "error" : "running"));
+					}
+				});
+			}
+		}, 2000);
+	</script>
+</body>
+
+</html>
