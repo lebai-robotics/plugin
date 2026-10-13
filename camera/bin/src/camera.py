@@ -7,6 +7,7 @@ import time
 import json
 import lebai_sdk
 import utils.camera as camera
+import utils.watchdog as watchdog
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -77,6 +78,7 @@ def init_camera():
     return cap
 
 def main():
+    dog = watchdog.Watchdog(3.0)
     cap = init_camera()
     if not cap.isOpened():
         cameras = search_camera()
@@ -95,6 +97,7 @@ def main():
         os.mkdir(images_dir)
     while True:
         time.sleep(0.1)
+        dog.feed()
         cmd = get_cmd()
         if not cmd or cmd == "":
             continue
