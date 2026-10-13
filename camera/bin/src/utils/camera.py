@@ -54,9 +54,9 @@ class Camera(object):
                     try:
                         future = ex.submit(self.camera.grab)
                         if not future.result(timeout=0.5*self.idle):
-                            break
+                            return False
                     except concurrent.futures.TimeoutError:
-                        break
+                        return True
 
     def getInfo(self):
         if self.kind == "rs":
@@ -79,10 +79,10 @@ class Camera(object):
         img_depth = None
         if self.kind == "cv":
             try:
-                self.clearCache()
-                ret, frame = self.camera.retrieve()
-                if ret:
-                    img_color = frame
+                if self.clearCache():
+                    ret, frame = self.camera.retrieve()
+                    if ret:
+                        img_color = frame
             except:
                 pass
         if self.kind == "rs":
